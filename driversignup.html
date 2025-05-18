@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Driver Signup - Share A Ride</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #0078d7;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005ea1;
+    }
+    .note {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 4px;
+    }
+    /* Loading overlay */
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      display: none;
+    }
+    #loadingOverlay div {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #0078d7;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+  </style>
+</head>
+<body>
+  <h2>Driver Signup</h2>
+  <form id="driverSignupForm" onsubmit="handleSubmit(event)" enctype="multipart/form-data">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" name="name" required />
+
+    <label for="mobile">Mobile Number</label>
+    <input type="tel" id="mobile" name="mobile" maxlength="11" placeholder="09XXXXXXXXX" required />
+    <div class="note">Mobile number must start with "09" and contain exactly 11 digits.</div>
+
+    <label for="vehicleMake">Vehicle Make</label>
+    <input type="text" id="vehicleMake" name="vehicleMake" required />
+
+    <label for="vehicleModel">Vehicle Model</label>
+    <input type="text" id="vehicleModel" name="vehicleModel" required />
+
+    <label for="plateNumber">Plate Number</label>
+    <input type="text" id="plateNumber" name="plateNumber" required />
+
+    <label for="licenseNumber">Driver's License Number</label>
+    <input type="text" id="licenseNumber" name="licenseNumber" required />
+
+    <label for="pickupLocations">Pickup Locations / Areas You Cover</label>
+    <textarea id="pickupLocations" name="pickupLocations" rows="3" placeholder="List the areas or locations you cover" required></textarea>
+
+    <label for="photo">Upload a Photo (optional)</label>
+    <input type="file" id="photo" name="photo" accept="image/*" />
+
+    <label for="otherInfo">Other Notes or Preferences</label>
+    <textarea id="otherInfo" name="otherInfo" rows="3"></textarea>
+
+    <button type="submit" id="submitBtn">Submit</button>
+  </form>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay">
+    <div></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('driverSignupForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const mobileInput = document.getElementById('mobile');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // Restrict mobile input to digits and max 11 digits
+    mobileInput.addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '').slice(0, 11);
+    });
+
+    function showLoading() {
+      loadingOverlay.style.display = 'flex';
+    }
+
+    function hideLoading() {
+      loadingOverlay.style.display = 'none';
+    }
+
+    async function handleSubmit(event) {
+      event.preventDefault();
+
+      const mobile = mobileInput.value;
+
+      if (!/^09\d{9}$/.test(mobile)) {
+        alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      showLoading();
+
+      // Since we have a file upload, use FormData
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch('YOUR_APPS_SCRIPT_WEB_APP_URL_HERE', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const result = await response.json();
+
+        if (result.result === 'success') {
+          alert('Signup submitted successfully!');
+          form.reset();
+          // Redirect or do something after success
+        } else {
+          alert('Error: ' + result.message);
+        }
+
+      } catch (error) {
+        alert('Error submitting form: ' + error.message);
+      } finally {
+        submitBtn.disabled = false;
+        hideLoading();
+      }
+    }
+  </script>
+</body>
+</html>
