@@ -64,12 +64,12 @@
 </head>
 <body>
   <h2>Driver Registration</h2>
-  <form id="driverForm" method="POST" action="https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec">
+  <form id="driverForm" method="POST" action="https://script.google.com/macros/s/AKfycbwU5pft2tu5KJoulEyAHvN4POuwLqpyqrF5bPKnMEdJCOVAzMl0rNAXG27lxfDbuSzG/exec">
     <label for="name">Full Name</label>
     <input type="text" id="name" name="name" required />
 
     <label for="mobile">Mobile Number</label>
-    <input type="tel" id="mobile" name="mobile" maxlength="11" placeholder="09XXXXXXXXX" pattern="^09\d{9}$" required />
+    <input type="tel" id="mobile" name="mobile" maxlength="11" placeholder="09XXXXXXXXX" required />
     <div class="note">Mobile number must start with "09" and contain exactly 11 digits.</div>
 
     <label for="pickupLocation">Pickup Location</label>
@@ -131,7 +131,7 @@
 
       loadingBarContainer.style.display = 'block';
       loadingBar.style.animation = 'none';
-      void loadingBar.offsetWidth;
+      void loadingBar.offsetWidth; // reset animation
       loadingBar.style.animation = 'loadingAnimation 3s linear forwards';
 
       const formData = new URLSearchParams(new FormData(form));
