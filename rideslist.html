@@ -38,40 +38,43 @@
       margin: 5px 0;
       color: #444;
     }
+    .message {
+      text-align: center;
+      font-style: italic;
+      color: #888;
+      margin-top: 40px;
+    }
   </style>
 </head>
 <body>
   <h2>Available Rides</h2>
-  <div class="ride-list" id="rideList">Loading rides...</div>
+  <div class="ride-list" id="rideList"></div>
+  <div class="message" id="message"></div>
 
   <script>
-    // Put your published Google Apps Script URL here (the URL you get after deploying the web app)
-    const GSA_URL = 'https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec';
+    const rideListEl = document.getElementById('rideList');
+    const messageEl = document.getElementById('message');
 
-    async function loadRides() {
-      const rideListEl = document.getElementById('rideList');
-      rideListEl.textContent = 'Loading rides...';
-
+    async function fetchRides() {
+      messageEl.textContent = 'Loading rides...';
       try {
-        const response = await fetch(GSA_URL, {
-          method: 'GET',
-          mode: 'cors'  // ensure CORS mode
-        });
+        const response = await fetch('YOUR_DEPLOYED_WEB_APP_URL');
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-        if (!response.ok) {
-          throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        const data = await response.json();
+
+        if (data.result !== 'success') {
+          throw new Error(data.message || 'Failed to load rides');
         }
 
-        const rides = await response.json();
-
-        if (!rides.length) {
-          rideListEl.textContent = 'No rides available at the moment.';
+        if (data.rides.length === 0) {
+          messageEl.textContent = 'No rides available at the moment.';
           return;
         }
 
-        rideListEl.innerHTML = ''; // clear loading text
+        messageEl.textContent = ''; // clear loading message
 
-        rides.forEach(ride => {
+        data.rides.forEach(ride => {
           const card = document.createElement('div');
           card.className = 'ride-card';
           card.innerHTML = `
@@ -85,14 +88,13 @@
           `;
           rideListEl.appendChild(card);
         });
-
       } catch (error) {
-        rideListEl.textContent = 'Error loading rides: ' + error.message;
+        messageEl.textContent = 'Error loading rides: ' + error.message;
         console.error('Error fetching rides:', error);
       }
     }
 
-    loadRides();
+    fetchRides();
   </script>
 </body>
 </html>
