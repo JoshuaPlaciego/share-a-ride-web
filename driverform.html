@@ -36,7 +36,6 @@
     button:hover {
       background-color: #005ea1;
     }
-    /* Loading bar container */
     #loadingBarContainer {
       display: none;
       width: 100%;
@@ -46,7 +45,6 @@
       height: 20px;
       overflow: hidden;
     }
-    /* Loading bar fill animation */
     #loadingBar {
       height: 100%;
       width: 0%;
@@ -80,18 +78,20 @@
     <label for="pickupEndTime">Pickup End Time</label>
     <input type="time" id="pickupEndTime" name="pickupEndTime" required />
 
+    <!-- ✅ New Field: Number of Seats to Offer -->
+    <label for="seats">Number of Seats to Offer</label>
+    <input type="number" id="seats" name="seats" min="1" max="10" required />
+
     <label for="otherInfo">Other Info (Landmarks, Instructions)</label>
     <textarea id="otherInfo" name="otherInfo" rows="3"></textarea>
 
     <button type="submit" id="submitBtn">Submit</button>
   </form>
 
-  <!-- Loading bar -->
   <div id="loadingBarContainer">
     <div id="loadingBar"></div>
   </div>
 
-  <!-- Hidden iframe to prevent page reload on submit -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
   <script>
@@ -102,7 +102,6 @@
     const loadingBarContainer = document.getElementById('loadingBarContainer');
     const loadingBar = document.getElementById('loadingBar');
 
-    // Validate pickup times
     form.addEventListener('submit', function(e) {
       const start = document.getElementById('pickupStartTime').value;
       const end = document.getElementById('pickupEndTime').value;
@@ -114,10 +113,8 @@
       }
 
       e.preventDefault(); // control submission
-
       submitBtn.disabled = true;
 
-      // Clear and disable inputs
       [...form.elements].forEach(el => {
         if (el.tagName.toLowerCase() !== 'button') {
           el.value = '';
@@ -125,28 +122,24 @@
         }
       });
 
-      // Show loading bar and restart animation properly
       loadingBarContainer.style.display = 'block';
       loadingBar.style.animation = 'none';
-      void loadingBar.offsetWidth; // trigger reflow
+      void loadingBar.offsetWidth;
       loadingBar.style.animation = 'loadingAnimation 3s linear forwards';
 
       submitted = true;
       form.submit();
     });
 
-    // When iframe loads, submission finished
     document.getElementById('hidden_iframe').onload = function() {
       if (submitted) {
         alert('Driver info submitted successfully!');
         submitted = false;
 
-        // Reset form and re-enable inputs and button
         [...form.elements].forEach(el => {
           el.disabled = false;
         });
         submitBtn.disabled = false;
-
         loadingBarContainer.style.display = 'none';
       }
     };
