@@ -3,97 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Available Rides - Share A Ride</title>
+  <title>Current Available Rides</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 2rem;
       background: #f4f4f4;
-      margin: 20px;
-    }
-    h2 {
-      text-align: center;
       color: #333;
     }
-    .ride-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-      padding: 20px;
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
     }
     .ride-card {
       background: white;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 16px;
-      transition: transform 0.2s;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    .ride-card:hover {
-      transform: translateY(-5px);
+    .ride-header {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
     }
-    .ride-card h3 {
-      margin: 0 0 10px;
-      color: #0078d7;
+    .ride-detail {
+      margin-bottom: 0.3rem;
     }
-    .ride-card p {
-      margin: 5px 0;
-      color: #444;
-    }
-    .message {
+    .no-rides {
       text-align: center;
       font-style: italic;
-      color: #888;
-      margin-top: 40px;
+      color: #777;
+      margin-top: 2rem;
     }
   </style>
 </head>
 <body>
-  <h2>Available Rides</h2>
-  <div class="ride-list" id="rideList"></div>
-  <div class="message" id="message"></div>
+  <h1>Available Rides Now</h1>
+  <div id="ridesList">Loading rides...</div>
 
   <script>
-    const rideListEl = document.getElementById('rideList');
-    const messageEl = document.getElementById('message');
+    const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec';
 
     async function fetchRides() {
-      messageEl.textContent = 'Loading rides...';
       try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec');
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const response = await fetch(SHEET_API_URL, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
         const data = await response.json();
 
-        if (data.result !== 'success') {
-          throw new Error(data.message || 'Failed to load rides');
+        if (data.result === 'success' && data.rides && data.rides.length > 0) {
+          displayRides(data.rides);
+        } else {
+          document.getElementById('ridesList').innerHTML = '<p class="no-rides">No rides available at the moment.</p>';
         }
-
-        if (!data.rides || data.rides.length === 0) {
-          messageEl.textContent = 'No rides available at the moment.';
-          return;
-        }
-
-        messageEl.textContent = ''; // clear loading message
-
-        data.rides.forEach(ride => {
-          const card = document.createElement('div');
-          card.className = 'ride-card';
-          card.innerHTML = `
-            <h3>${ride.name || 'No Name'}</h3>
-            <p><strong>Mobile:</strong> ${ride.mobile || '-'}</p>
-            <p><strong>Location:</strong> ${ride.pickupLocation || '-'}</p>
-            <p><strong>Date:</strong> ${ride.pickupDate || '-'}</p>
-            <p><strong>Time:</strong> ${ride.pickupStartTime || '-'} - ${ride.pickupEndTime || '-'}</p>
-            <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
-            <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
-          `;
-          rideListEl.appendChild(card);
-        });
       } catch (error) {
-        messageEl.textContent = 'Error loading rides: ' + error.message;
-        console.error('Error fetching rides:', error);
+        document.getElementById('ridesList').innerHTML = `<p class="no-rides">Error loading rides: ${error.message}</p>`;
       }
     }
 
+    function displayRides(rides) {
+      const container = document.getElementById('ridesList');
+      container.innerHTML = '';
+
+      rides.forEach(ride => {
+        const card = document.createElement('div');
+        card.className = 'ride-card';
+
+        card.innerHTML = `
+          <div class="ride-header">${ride.name} (${ride.mobile})</div>
+          <div class="ride-detail"><strong>Pick Up Location:</strong> ${ride.pickupLocation}</div>
+          <div class="ride-detail"><strong>Date:</strong> ${ride.pickupDate}</div>
+          <div class="ride-detail"><strong>Time:</strong> ${ride.pickupStartTime} - ${ride.pickupEndTime}</div>
+          <div class="ride-detail"><strong>Seats Offered:</strong> ${ride.seats}</div>
+          <div class="ride-detail"><strong>Other Info:</strong> ${ride.otherInfo}</div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // Fetch rides on page load
     fetchRides();
   </script>
 </body>
