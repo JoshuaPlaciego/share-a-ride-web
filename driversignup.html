@@ -75,6 +75,9 @@
     <label for="name">Full Name</label>
     <input type="text" id="name" name="name" required />
 
+    <label for="email">Email Address</label>
+    <input type="email" id="email" name="email" placeholder="example@mail.com" required />
+    
     <label for="mobile">Mobile Number</label>
     <input type="tel" id="mobile" name="mobile" maxlength="11" placeholder="09XXXXXXXXX" required />
     <div class="note">Mobile number must start with "09" and contain exactly 11 digits.</div>
@@ -131,9 +134,17 @@
       event.preventDefault();
 
       const mobile = mobileInput.value;
+      const email = form.email.value;
 
       if (!/^09\d{9}$/.test(mobile)) {
         alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
+        return;
+      }
+
+      // Simple email validation (HTML5 type="email" already validates but double check)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address.');
         return;
       }
 
