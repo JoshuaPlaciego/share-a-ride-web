@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Driver Registration - Share A Ride</title>
   <style>
+    /* Your styles unchanged */
     body {
       font-family: Arial, sans-serif;
       max-width: 500px;
@@ -41,30 +42,11 @@
       color: #555;
       margin-top: 4px;
     }
-    #loadingBarContainer {
-      display: none;
-      width: 100%;
-      background-color: #ddd;
-      border-radius: 4px;
-      margin-top: 15px;
-      height: 20px;
-      overflow: hidden;
-    }
-    #loadingBar {
-      height: 100%;
-      width: 0%;
-      background-color: #0078d7;
-      animation: loadingAnimation 3s linear forwards;
-    }
-    @keyframes loadingAnimation {
-      from { width: 0%; }
-      to { width: 100%; }
-    }
   </style>
 </head>
 <body>
   <h2>Driver Registration</h2>
-  <form id="driverForm" method="POST" action="https://script.google.com/macros/s/AKfycbwU5pft2tu5KJoulEyAHvN4POuwLqpyqrF5bPKnMEdJCOVAzMl0rNAXG27lxfDbuSzG/exec">
+  <form id="driverForm" onsubmit="handleSubmit(event)">
     <label for="name">Full Name</label>
     <input type="text" id="name" name="name" required />
 
@@ -93,15 +75,9 @@
     <button type="submit" id="submitBtn">Submit</button>
   </form>
 
-  <div id="loadingBarContainer">
-    <div id="loadingBar"></div>
-  </div>
-
   <script>
     const form = document.getElementById('driverForm');
     const submitBtn = document.getElementById('submitBtn');
-    const loadingBarContainer = document.getElementById('loadingBarContainer');
-    const loadingBar = document.getElementById('loadingBar');
     const mobileInput = document.getElementById('mobile');
 
     // Restrict mobile input to digits and max 11 digits
@@ -109,8 +85,8 @@
       this.value = this.value.replace(/\D/g, '').slice(0, 11);
     });
 
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
+    function handleSubmit(event) {
+      event.preventDefault();
 
       const start = document.getElementById('pickupStartTime').value;
       const end = document.getElementById('pickupEndTime').value;
@@ -126,51 +102,31 @@
         return;
       }
 
-      [...form.elements].forEach(el => el.disabled = true);
       submitBtn.disabled = true;
 
-      loadingBarContainer.style.display = 'block';
-      loadingBar.style.animation = 'none';
-      void loadingBar.offsetWidth; // reset animation
-      loadingBar.style.animation = 'loadingAnimation 3s linear forwards';
+      const formData = {
+        name: form.name.value,
+        mobile: mobile,
+        pickupLocation: form.pickupLocation.value,
+        pickupDate: form.pickupDate.value,
+        pickupStartTime: form.pickupStartTime.value,
+        pickupEndTime: form.pickupEndTime.value,
+        seats: form.seats.value,
+        otherInfo: form.otherInfo.value
+      };
 
-      const formData = new URLSearchParams(new FormData(form));
-
-      try {
-        const response = await fetch(form.action, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: formData.toString()
-        });
-
-        const result = await response.json();
-
-        if (result.result === 'success') {
+      google.script.run
+        .withSuccessHandler(() => {
           alert('Driver info submitted successfully!');
-
-          [...form.elements].forEach(el => {
-            if (el.tagName.toLowerCase() !== 'button') {
-              el.value = '';
-            }
-            el.disabled = false;
-          });
-
+          form.reset();
           submitBtn.disabled = false;
-          loadingBarContainer.style.display = 'none';
-
-        } else {
-          throw new Error(result.error || 'Unknown error');
-        }
-      } catch (error) {
-        alert('Error submitting form: ' + error.message);
-
-        [...form.elements].forEach(el => el.disabled = false);
-        submitBtn.disabled = false;
-        loadingBarContainer.style.display = 'none';
-      }
-    });
+        })
+        .withFailureHandler(err => {
+          alert('Error submitting form: ' + err.message);
+          submitBtn.disabled = false;
+        })
+        .submitDriverInfo(formData);
+    }
   </script>
 </body>
 </html>
