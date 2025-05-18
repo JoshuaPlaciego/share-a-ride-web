@@ -1,38 +1,146 @@
-form.addEventListener('submit', function(e) {
-  const start = document.getElementById('pickupStartTime').value;
-  const end = document.getElementById('pickupEndTime').value;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Driver Registration - Share A Ride</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #0078d7;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005ea1;
+    }
+    #loadingBarContainer {
+      display: none;
+      width: 100%;
+      background-color: #ddd;
+      border-radius: 4px;
+      margin-top: 15px;
+      height: 20px;
+      overflow: hidden;
+    }
+    #loadingBar {
+      height: 100%;
+      width: 0%;
+      background-color: #0078d7;
+      animation: loadingAnimation 3s linear forwards;
+    }
+    @keyframes loadingAnimation {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <h2>Driver Registration</h2>
+  <form id="driverForm" method="POST" action="https://script.google.com/macros/s/AKfycbwU5pft2tu5KJoulEyAHvN4POuwLqpyqrF5bPKnMEdJCOVAzMl0rNAXG27lxfDbuSzG/exec" target="hidden_iframe">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" name="name" required />
 
-  if (end <= start) {
-    alert('Pickup end time must be after the start time.');
-    e.preventDefault();
-    return false;
-  }
+    <label for="mobile">Mobile Number</label>
+    <input type="tel" id="mobile" name="mobile" pattern="^\+?\d{10,15}$" placeholder="+639XXXXXXXXX" required />
 
-  e.preventDefault(); // prevent default submit to control flow
-  submitBtn.disabled = true;
+    <label for="pickupLocation">Pickup Location</label>
+    <input type="text" id="pickupLocation" name="pickupLocation" required />
 
-  loadingBarContainer.style.display = 'block';
-  loadingBar.style.animation = 'none';
-  void loadingBar.offsetWidth;
-  loadingBar.style.animation = 'loadingAnimation 3s linear forwards';
+    <label for="pickupDate">Pickup Date</label>
+    <input type="date" id="pickupDate" name="pickupDate" required />
 
-  submitted = true;
-  form.submit();  // submit with full values intact
-});
+    <label for="pickupStartTime">Pickup Start Time</label>
+    <input type="time" id="pickupStartTime" name="pickupStartTime" required />
 
-document.getElementById('hidden_iframe').onload = function() {
-  if (submitted) {
-    alert('Driver info submitted successfully!');
-    submitted = false;
+    <label for="pickupEndTime">Pickup End Time</label>
+    <input type="time" id="pickupEndTime" name="pickupEndTime" required />
 
-    // Clear and enable fields AFTER successful submission
-    [...form.elements].forEach(el => {
-      if (el.tagName.toLowerCase() !== 'button') {
-        el.value = '';
-        el.disabled = false;
+    <!-- Number of seats to offer -->
+    <label for="seats">Number of Seats to Offer</label>
+    <input type="number" id="seats" name="seats" min="1" max="10" required />
+
+    <label for="otherInfo">Other Info (Landmarks, Instructions)</label>
+    <textarea id="otherInfo" name="otherInfo" rows="3"></textarea>
+
+    <button type="submit" id="submitBtn">Submit</button>
+  </form>
+
+  <div id="loadingBarContainer">
+    <div id="loadingBar"></div>
+  </div>
+
+  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+  <script>
+    let submitted = false;
+
+    const form = document.getElementById('driverForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingBarContainer = document.getElementById('loadingBarContainer');
+    const loadingBar = document.getElementById('loadingBar');
+
+    form.addEventListener('submit', function(e) {
+      const start = document.getElementById('pickupStartTime').value;
+      const end = document.getElementById('pickupEndTime').value;
+
+      if (end <= start) {
+        alert('Pickup end time must be after the start time.');
+        e.preventDefault();
+        return false;
       }
+
+      e.preventDefault(); // control submission
+      submitBtn.disabled = true;
+
+      loadingBarContainer.style.display = 'block';
+      loadingBar.style.animation = 'none';
+      void loadingBar.offsetWidth;
+      loadingBar.style.animation = 'loadingAnimation 3s linear forwards';
+
+      submitted = true;
+      form.submit();
     });
-    submitBtn.disabled = false;
-    loadingBarContainer.style.display = 'none';
-  }
-};
+
+    document.getElementById('hidden_iframe').onload = function() {
+      if (submitted) {
+        alert('Driver info submitted successfully!');
+        submitted = false;
+
+        // Clear and enable inputs AFTER successful submit
+        [...form.elements].forEach(el => {
+          if (el.tagName.toLowerCase() !== 'button') {
+            el.value = '';
+            el.disabled = false;
+          }
+        });
+
+        submitBtn.disabled = false;
+        loadingBarContainer.style.display = 'none';
+      }
+    };
+  </script>
+</body>
+</html>
