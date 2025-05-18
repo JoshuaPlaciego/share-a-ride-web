@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Driver Registration - Share A Ride</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #0078d7;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005ea1;
+    }
+  </style>
+</head>
+<body>
+  <h2>Driver Registration</h2>
+  <form id="driverForm" method="POST" action="https://script.google.com/macros/s/AKfycbwrn3MDKx7UICkwlNTST1XM49JdNZrhtF344BE3aXCTcECjDEBuPwN3irjEVR9Rq4g7LA/exec" target="hidden_iframe" onsubmit="submitted=true;">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" name="name" required />
+
+    <label for="mobile">Mobile Number</label>
+    <input type="tel" id="mobile" name="mobile" pattern="^\+?\d{10,15}$" placeholder="+639XXXXXXXXX" required />
+
+    <label for="pickupLocation">Pickup Location</label>
+    <input type="text" id="pickupLocation" name="pickupLocation" required />
+
+    <label for="pickupDate">Pickup Date</label>
+    <input type="date" id="pickupDate" name="pickupDate" required />
+
+    <label for="pickupStartTime">Pickup Start Time</label>
+    <input type="time" id="pickupStartTime" name="pickupStartTime" required />
+
+    <label for="pickupEndTime">Pickup End Time</label>
+    <input type="time" id="pickupEndTime" name="pickupEndTime" required />
+
+    <label for="otherInfo">Other Info (Landmarks, Instructions)</label>
+    <textarea id="otherInfo" name="otherInfo" rows="3"></textarea>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Hidden iframe to prevent page reload on submit -->
+  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) { alert('Driver info submitted successfully!'); document.getElementById('driverForm').reset(); submitted=false; }"></iframe>
+
+  <script>
+    let submitted = false;
+
+    // Optional: Add validation for pickup times
+    document.getElementById('driverForm').addEventListener('submit', function(e) {
+      const start = document.getElementById('pickupStartTime').value;
+      const end = document.getElementById('pickupEndTime').value;
+
+      if (end <= start) {
+        alert('Pickup end time must be after the start time.');
+        e.preventDefault();
+        return false;
+      }
+    });
+  </script>
+</body>
+</html>

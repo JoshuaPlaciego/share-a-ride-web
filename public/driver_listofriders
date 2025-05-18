@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Driver Form - Share-A-Ride</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 0 20px;
+      background-color: #f9fafb;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: vertical;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 25px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .riders-list {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .rider-item {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+    .rider-item:last-child {
+      border-bottom: none;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #007bff;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="back-link">&larr; Back to Home</a>
+
+  <h1>Driver - Share a Ride</h1>
+
+  <form id="driverForm">
+    <label for="name">Driver Name</label>
+    <input type="text" id="name" name="name" required />
+
+    <label for="mobile">Mobile Number</label>
+    <input type="tel" id="mobile" name="mobile" pattern="[0-9]{10,15}" placeholder="e.g. 09123456789" required />
+
+    <label for="pickupLocation">Pickup Location</label>
+    <input type="text" id="pickupLocation" name="pickupLocation" required />
+
+    <label for="pickupStartTime">Pickup Start Time</label>
+    <input type="datetime-local" id="pickupStartTime" name="pickupStartTime" required />
+
+    <label for="pickupEndTime">Pickup End Time</label>
+    <input type="datetime-local" id="pickupEndTime" name="pickupEndTime" required />
+
+    <label for="otherInfo">Other Info (Landmarks, Instructions)</label>
+    <textarea id="otherInfo" name="otherInfo" rows="3"></textarea>
+
+    <button type="submit">Submit Ride Offer</button>
+  </form>
+
+  <div class="riders-list">
+    <h2>Matching Rider Requests</h2>
+    <div id="ridersContainer">
+      <!-- Matched riders will be shown here -->
+      <p>No rider requests to show yet.</p>
+    </div>
+  </div>
+
+  <script>
+    // Mock rider requests data
+    // In a real app, replace this with API or DB call
+    const riderRequests = [
+      {
+        id: 1,
+        name: "Alice",
+        mobile: "09112223333",
+        pickupLocation: "Manila",
+        pickupTime: "2025-05-18T09:30",
+        otherInfo: "Near the big mall"
+      },
+      {
+        id: 2,
+        name: "Bob",
+        mobile: "09223334444",
+        pickupLocation: "Manila",
+        pickupTime: "2025-05-18T10:15",
+        otherInfo: "At the bus terminal"
+      },
+      {
+        id: 3,
+        name: "Charlie",
+        mobile: "09334445555",
+        pickupLocation: "Quezon City",
+        pickupTime: "2025-05-18T11:00",
+        otherInfo: "Near the park"
+      }
+    ];
+
+    const form = document.getElementById('driverForm');
+    const ridersContainer = document.getElementById('ridersContainer');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const driverData = {
+        name: form.name.value.trim(),
+        mobile: form.mobile.value.trim(),
+        pickupLocation: form.pickupLocation.value.trim().toLowerCase(),
+        pickupStartTime: new Date(form.pickupStartTime.value),
+        pickupEndTime: new Date(form.pickupEndTime.value),
+        otherInfo: form.otherInfo.value.trim(),
+      };
+
+      // Basic validation for time range
+      if (driverData.pickupEndTime <= driverData.pickupStartTime) {
+        alert('Pickup end time must be after the start time.');
+        return;
+      }
+
+      // Filter rider requests by matching location and time window
+      const matchedRiders = riderRequests.filter(rider => {
+        const riderPickupTime = new Date(rider.pickupTime);
+        return (
+          rider.pickupLocation.toLowerCase() === driverData.pickupLocation &&
+          riderPickupTime >= driverData.pickupStartTime &&
+          riderPickupTime <= driverData.pickupEndTime
+        );
+      });
+
+      // Display matched riders
+      displayMatchedRiders(matchedRiders);
+    });
+
+    function displayMatchedRiders(riders) {
+      if (riders.length === 0) {
+        ridersContainer.innerHTML = '<p>No matching rider requests found.</p>';
+        return;
+      }
+
+      ridersContainer.innerHTML = '';
+
+      riders.forEach(rider => {
+        const div = document.createElement('div');
+        div.classList.add('rider-item');
+        div.innerHTML = `
+          <strong>Name:</strong> ${rider.name}<br/>
+          <strong>Mobile:</strong> ${rider.mobile}<br/>
+          <strong>Pickup Time:</strong> ${new Date(rider.pickupTime).toLocaleString()}<br/>
+          <strong>Other Info:</strong> ${rider.otherInfo || 'N/A'}
+        `;
+        ridersContainer.appendChild(div);
+      });
+    }
+  </script>
+
+</body>
+</html>
