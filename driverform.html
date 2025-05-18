@@ -55,6 +55,12 @@
       from { width: 0%; }
       to { width: 100%; }
     }
+    .note {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 4px;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body>
@@ -64,7 +70,8 @@
     <input type="text" id="name" name="name" required />
 
     <label for="mobile">Mobile Number</label>
-    <input type="tel" id="mobile" name="mobile" pattern="^\+?\d{10,15}$" placeholder="+639XXXXXXXXX" required />
+    <input type="tel" id="mobile" name="mobile" placeholder="e.g. 09171234567" required />
+    <div class="note">Mobile number must start with "09" and be exactly 11 digits.</div>
 
     <label for="pickupLocation">Pickup Location</label>
     <input type="text" id="pickupLocation" name="pickupLocation" required />
@@ -104,11 +111,10 @@
 
     form.addEventListener('submit', function(e) {
       const mobileInput = document.getElementById('mobile').value.trim();
-      const mobilePattern = /^\+?\d{10,15}$/;
+      const mobilePattern = /^09\d{9}$/; // must start with 09 and be 11 digits total
 
-      // Validate mobile number format
       if (!mobilePattern.test(mobileInput)) {
-        alert('Please enter a valid mobile number. It should contain only digits, optionally starting with +, and be 10 to 15 digits long.');
+        alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
         e.preventDefault();
         return false;
       }
