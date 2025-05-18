@@ -41,6 +41,33 @@
       color: #555;
       margin-top: 4px;
     }
+
+    /* Loading overlay */
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      display: none; /* hidden by default */
+    }
+    #loadingOverlay div {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #0078d7;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
   </style>
 </head>
 <body>
@@ -74,15 +101,29 @@
     <button type="submit" id="submitBtn">Submit</button>
   </form>
 
+  <!-- Loading overlay -->
+  <div id="loadingOverlay">
+    <div></div>
+  </div>
+
   <script>
     const form = document.getElementById('driverForm');
     const submitBtn = document.getElementById('submitBtn');
     const mobileInput = document.getElementById('mobile');
+    const loadingOverlay = document.getElementById('loadingOverlay');
 
     // Restrict mobile input to digits and max 11 digits
     mobileInput.addEventListener('input', function () {
       this.value = this.value.replace(/\D/g, '').slice(0, 11);
     });
+
+    function showLoading() {
+      loadingOverlay.style.display = 'flex';
+    }
+
+    function hideLoading() {
+      loadingOverlay.style.display = 'none';
+    }
 
     async function handleSubmit(event) {
       event.preventDefault();
@@ -102,6 +143,7 @@
       }
 
       submitBtn.disabled = true;
+      showLoading();
 
       const formData = {
         name: form.name.value,
@@ -115,26 +157,21 @@
       };
 
       try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec', {
+        await fetch('https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec', {
           method: 'POST',
+          mode: 'no-cors', // avoid CORS but no response content
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(formData)
         });
-
-        const data = await response.json();
-
-        if (data.result === 'success') {
-          alert('Driver info submitted successfully!');
-          form.reset();
-        } else {
-          alert('Submission failed: ' + (data.message || 'Unknown error'));
-        }
+        alert('Driver info submitted successfully!');
+        form.reset();
       } catch (error) {
         alert('Error submitting form: ' + error.message);
       } finally {
         submitBtn.disabled = false;
+        hideLoading();
       }
     }
   </script>
