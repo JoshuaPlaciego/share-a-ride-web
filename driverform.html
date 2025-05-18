@@ -78,10 +78,11 @@
     <label for="pickupEndTime">Pickup End Time</label>
     <input type="time" id="pickupEndTime" name="pickupEndTime" required />
 
-    <!-- Number of seats to offer -->
+    <!-- Number of seats first -->
     <label for="seats">Number of Seats to Offer</label>
     <input type="number" id="seats" name="seats" min="1" max="10" required />
 
+    <!-- Other Info after seats -->
     <label for="otherInfo">Other Info (Landmarks, Instructions)</label>
     <textarea id="otherInfo" name="otherInfo" rows="3"></textarea>
 
@@ -129,7 +130,6 @@
         alert('Driver info submitted successfully!');
         submitted = false;
 
-        // Clear and enable inputs AFTER successful submit
         [...form.elements].forEach(el => {
           if (el.tagName.toLowerCase() !== 'button') {
             el.value = '';
