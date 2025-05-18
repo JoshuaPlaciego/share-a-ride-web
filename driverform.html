@@ -69,6 +69,11 @@
       100% { transform: rotate(360deg);}
     }
   </style>
+
+  <!-- flatpickr CSS and JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 </head>
 <body>
   <h2>Driver Registration</h2>
@@ -87,11 +92,11 @@
     <input type="date" id="pickupDate" name="pickupDate" required />
 
     <label for="pickupStartTime">Pickup Start Time</label>
-    <input type="time" id="pickupStartTime" name="pickupStartTime" required step="60" />
+    <input type="text" id="pickupStartTime" name="pickupStartTime" required />
     <div class="note">Use 24-hour format (e.g., 08:00, 14:30).</div>
 
     <label for="pickupEndTime">Pickup End Time</label>
-    <input type="time" id="pickupEndTime" name="pickupEndTime" required step="60" />
+    <input type="text" id="pickupEndTime" name="pickupEndTime" required />
     <div class="note">Use 24-hour format (e.g., 08:30, 15:00).</div>
 
     <label for="seats">Number of Seats to Offer</label>
@@ -109,6 +114,20 @@
   </div>
 
   <script>
+    // Initialize flatpickr for 24-hour time picker on start and end time inputs
+    flatpickr("#pickupStartTime", {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "H:i",
+      time_24hr: true
+    });
+    flatpickr("#pickupEndTime", {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "H:i",
+      time_24hr: true
+    });
+
     const form = document.getElementById('driverForm');
     const submitBtn = document.getElementById('submitBtn');
     const mobileInput = document.getElementById('mobile');
