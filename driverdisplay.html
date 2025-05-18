@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Submission Confirmation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #f4f4f4;
+      border-radius: 10px;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      border: 1px solid #c3e6cb;
+    }
+    .entry {
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .entry p {
+      margin: 8px 0;
+    }
+    .buttons {
+      margin-top: 30px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .buttons a {
+      text-decoration: none;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .buttons a:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="success">Ride info submitted successfully!</div>
+  <div class="entry" id="driverDetails"></div>
+
+  <div class="buttons">
+    <a href="driverForm.html">Submit Another Entry</a>
+    <a href="index.html">Return to Main Menu</a>
+  </div>
+
+  <script>
+    const data = JSON.parse(sessionStorage.getItem('driverEntry'));
+
+    if (data) {
+      const container = document.getElementById('driverDetails');
+      container.innerHTML = `
+        <p><strong>Name:</strong> ${data.name}</p>
+        <p><strong>Mobile:</strong> ${data.mobile}</p>
+        <p><strong>Pickup Location:</strong> ${data.pickupLocation}</p>
+        <p><strong>Pickup Date:</strong> ${data.pickupDate}</p>
+        <p><strong>Pickup Start Time:</strong> ${data.pickupStartTime}</p>
+        <p><strong>Pickup End Time:</strong> ${data.pickupEndTime}</p>
+        <p><strong>Seats:</strong> ${data.seats}</p>
+        <p><strong>Other Info:</strong> ${data.otherInfo}</p>
+      `;
+    } else {
+      document.body.innerHTML = '<p>No entry data found. Please go back and submit the form.</p>';
+    }
+  </script>
+</body>
+</html>

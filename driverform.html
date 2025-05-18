@@ -165,8 +165,12 @@
           },
           body: JSON.stringify(formData)
         });
-        alert('Driver info submitted successfully!');
-        form.reset();
+        // Store submitted data in sessionStorage
+sessionStorage.setItem('driverEntry', JSON.stringify(formData));
+
+// Redirect to display page
+window.location.href = 'driverDisplay.html';
+
       } catch (error) {
         alert('Error submitting form: ' + error.message);
       } finally {
