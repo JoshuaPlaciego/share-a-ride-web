@@ -64,20 +64,12 @@
 </head>
 <body>
   <h2>Driver Registration</h2>
-  <form id="driverForm" method="POST" action="https://script.google.com/macros/s/AKfycbwU5pft2tu5KJoulEyAHvN4POuwLqpyqrF5bPKnMEdJCOVAzMl0rNAXG27lxfDbuSzG/exec" target="hidden_iframe" autocomplete="off">
+  <form id="driverForm" method="POST" action="https://script.google.com/macros/s/AKfycbwU5pft2tu5KJoulEyAHvN4POuwLqpyqrF5bPKnMEdJCOVAzMl0rNAXG27lxfDbuSzG/exec">
     <label for="name">Full Name</label>
     <input type="text" id="name" name="name" required />
 
     <label for="mobile">Mobile Number</label>
-    <input 
-      type="tel" 
-      id="mobile" 
-      name="mobile" 
-      maxlength="11" 
-      placeholder="09XXXXXXXXX" 
-      required 
-      autocomplete="off"
-    />
+    <input type="tel" id="mobile" name="mobile" maxlength="11" placeholder="09XXXXXXXXX" pattern="^09\d{9}$" required />
     <div class="note">Mobile number must start with "09" and contain exactly 11 digits.</div>
 
     <label for="pickupLocation">Pickup Location</label>
@@ -105,68 +97,80 @@
     <div id="loadingBar"></div>
   </div>
 
-  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-
   <script>
-    let submitted = false;
-
     const form = document.getElementById('driverForm');
     const submitBtn = document.getElementById('submitBtn');
     const loadingBarContainer = document.getElementById('loadingBarContainer');
     const loadingBar = document.getElementById('loadingBar');
+    const mobileInput = document.getElementById('mobile');
 
-    // Restrict mobile input to digits only, max 11
-    document.getElementById('mobile').addEventListener('input', function () {
+    // Restrict mobile input to digits and max 11 digits
+    mobileInput.addEventListener('input', function () {
       this.value = this.value.replace(/\D/g, '').slice(0, 11);
     });
 
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      // Mobile validation
-      const mobile = document.getElementById('mobile').value;
-      if (mobile.length !== 11 || !mobile.startsWith('09')) {
-        alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
-        return;
-      }
-
-      // Pickup time validation
       const start = document.getElementById('pickupStartTime').value;
       const end = document.getElementById('pickupEndTime').value;
+      const mobile = mobileInput.value;
+
       if (end <= start) {
         alert('Pickup end time must be after the start time.');
         return;
       }
 
-      // Disable form fields and show loading bar
+      if (!/^09\d{9}$/.test(mobile)) {
+        alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
+        return;
+      }
+
       [...form.elements].forEach(el => el.disabled = true);
       submitBtn.disabled = true;
 
       loadingBarContainer.style.display = 'block';
       loadingBar.style.animation = 'none';
-      void loadingBar.offsetWidth; // restart animation
+      void loadingBar.offsetWidth;
       loadingBar.style.animation = 'loadingAnimation 3s linear forwards';
 
-      submitted = true;
-      form.submit();
-    });
+      const formData = new URLSearchParams(new FormData(form));
 
-    document.getElementById('hidden_iframe').onload = function () {
-      if (submitted) {
-        alert('Driver info submitted successfully!');
-        submitted = false;
-
-        // Reset form and enable fields
-        [...form.elements].forEach(el => {
-          if (el.tagName.toLowerCase() !== 'button') {
-            el.value = '';
-          }
-          el.disabled = false;
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: formData.toString()
         });
+
+        const result = await response.json();
+
+        if (result.result === 'success') {
+          alert('Driver info submitted successfully!');
+
+          [...form.elements].forEach(el => {
+            if (el.tagName.toLowerCase() !== 'button') {
+              el.value = '';
+            }
+            el.disabled = false;
+          });
+
+          submitBtn.disabled = false;
+          loadingBarContainer.style.display = 'none';
+
+        } else {
+          throw new Error(result.error || 'Unknown error');
+        }
+      } catch (error) {
+        alert('Error submitting form: ' + error.message);
+
+        [...form.elements].forEach(el => el.disabled = false);
         submitBtn.disabled = false;
         loadingBarContainer.style.display = 'none';
       }
-    };
+    });
   </script>
 </body>
 </html>
