@@ -1,44 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Share-A-Ride</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Available Rides - Share A Ride</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 40px;
-      background-color: #f0f4f8;
+      background: #f4f4f4;
+      margin: 20px;
     }
-    h1 {
-      margin-bottom: 40px;
+    h2 {
+      text-align: center;
       color: #333;
     }
-    .btn {
-      display: inline-block;
-      background-color: #007bff;
-      color: white;
-      padding: 15px 30px;
-      margin: 10px;
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 18px;
-      transition: background-color 0.3s ease;
-      cursor: pointer;
+    .ride-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      padding: 20px;
     }
-    .btn:hover {
-      background-color: #0056b3;
+    .ride-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 16px;
+      transition: transform 0.2s;
+    }
+    .ride-card:hover {
+      transform: translateY(-5px);
+    }
+    .ride-card h3 {
+      margin: 0 0 10px;
+      color: #0078d7;
+    }
+    .ride-card p {
+      margin: 5px 0;
+      color: #444;
     }
   </style>
 </head>
 <body>
+  <h2>Available Rides</h2>
+  <div class="ride-list" id="rideList"></div>
 
-  <h1>Welcome to Share-A-Ride</h1>
-  <p>Are you a driver or a rider?</p>
+  <script>
+    // Sample data for demonstration
+    const sampleRides = [
+      {
+        name: "Juan Dela Cruz",
+        mobile: "09171234567",
+        pickupLocation: "Makati",
+        pickupDate: "2025-05-20",
+        pickupStartTime: "08:00",
+        pickupEndTime: "08:30",
+        seats: 3,
+        otherInfo: "Near Ayala MRT"
+      },
+      {
+        name: "Maria Santos",
+        mobile: "09181234567",
+        pickupLocation: "Quezon City",
+        pickupDate: "2025-05-20",
+        pickupStartTime: "09:00",
+        pickupEndTime: "09:30",
+        seats: 2,
+        otherInfo: "Trinoma Pickup Point"
+      }
+    ];
 
-  <a href="driverform.html" class="btn">I want to Share a Ride (Driver)</a>
-  <a href="ridelist.html" class="btn">I want to Ride (Rider)</a>
-
+    const rideListEl = document.getElementById('rideList');
+    sampleRides.forEach(ride => {
+      const card = document.createElement('div');
+      card.className = 'ride-card';
+      card.innerHTML = `
+        <h3>${ride.name}</h3>
+        <p><strong>Mobile:</strong> ${ride.mobile}</p>
+        <p><strong>Location:</strong> ${ride.pickupLocation}</p>
+        <p><strong>Date:</strong> ${ride.pickupDate}</p>
+        <p><strong>Time:</strong> ${ride.pickupStartTime} - ${ride.pickupEndTime}</p>
+        <p><strong>Seats:</strong> ${ride.seats}</p>
+        <p><strong>Notes:</strong> ${ride.otherInfo}</p>
+      `;
+      rideListEl.appendChild(card);
+    });
+  </script>
 </body>
 </html>
