@@ -64,12 +64,22 @@
 </head>
 <body>
   <h2>Driver Registration</h2>
-  <form id="driverForm">
+  <form id="driverForm" method="POST" action="https://script.google.com/macros/s/AKfycbwU5pft2tu5KJoulEyAHvN4POuwLqpyqrF5bPKnMEdJCOVAzMl0rNAXG27lxfDbuSzG/exec" target="hidden_iframe">
+    
     <label for="name">Full Name</label>
     <input type="text" id="name" name="name" required />
 
     <label for="mobile">Mobile Number</label>
-    <input type="tel" id="mobile" name="mobile" maxlength="11" placeholder="09XXXXXXXXX" pattern="^09\\d{9}$" required />
+    <input
+      type="tel"
+      id="mobile"
+      name="mobile"
+      maxlength="11"
+      placeholder="09XXXXXXXXX"
+      pattern="^09\d{9}$"
+      title="Mobile number must start with 09 and be exactly 11 digits"
+      required
+    />
     <div class="note">Mobile number must start with "09" and contain exactly 11 digits.</div>
 
     <label for="pickupLocation">Pickup Location</label>
@@ -97,67 +107,69 @@
     <div id="loadingBar"></div>
   </div>
 
+  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
   <script>
+    let submitted = false;
+
     const form = document.getElementById('driverForm');
     const submitBtn = document.getElementById('submitBtn');
     const loadingBarContainer = document.getElementById('loadingBarContainer');
     const loadingBar = document.getElementById('loadingBar');
-    const endpoint = "https://script.google.com/macros/s/AKfycbwU5pft2tu5KJoulEyAHvN4POuwLqpyqrF5bPKnMEdJCOVAzMl0rNAXG27lxfDbuSzG/exec";
+    const mobileInput = document.getElementById('mobile');
 
-    // Restrict to numeric input and max 11 digits
-    document.getElementById('mobile').addEventListener('input', function () {
+    // Restrict mobile input to 11 digits only, real-time
+    mobileInput.addEventListener('input', function () {
       this.value = this.value.replace(/\D/g, '').slice(0, 11);
     });
 
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
-
-      const mobile = document.getElementById('mobile').value;
+    form.addEventListener('submit', function (e) {
       const start = document.getElementById('pickupStartTime').value;
       const end = document.getElementById('pickupEndTime').value;
-
-      if (!/^09\d{9}$/.test(mobile)) {
-        alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
-        return;
-      }
+      const mobile = mobileInput.value;
 
       if (end <= start) {
         alert('Pickup end time must be after the start time.');
+        e.preventDefault();
         return;
       }
 
-      const formData = new FormData(form);
-      const data = new URLSearchParams(formData);
-
-      // Show loading bar
-      loadingBarContainer.style.display = 'block';
-      loadingBar.style.animation = 'none';
-      void loadingBar.offsetWidth; // Reset animation
-      loadingBar.style.animation = 'loadingAnimation 3s linear forwards';
-
-      submitBtn.disabled = true;
-
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          body: data
-        });
-
-        const result = await response.json();
-
-        if (result.result === "success") {
-          alert('Driver info submitted successfully!');
-          form.reset();
-        } else {
-          alert('Submission failed: ' + result.error);
-        }
-      } catch (err) {
-        alert('Error submitting form: ' + err.message);
+      // JavaScript fallback validation
+      if (!/^09\d{9}$/.test(mobile)) {
+        alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
+        e.preventDefault();
+        return;
       }
 
-      loadingBarContainer.style.display = 'none';
-      submitBtn.disabled = false;
+      // Disable form and show loading
+      e.preventDefault();
+      [...form.elements].forEach(el => el.disabled = true);
+      submitBtn.disabled = true;
+      loadingBarContainer.style.display = 'block';
+      loadingBar.style.animation = 'none';
+      void loadingBar.offsetWidth;
+      loadingBar.style.animation = 'loadingAnimation 3s linear forwards';
+
+      submitted = true;
+      form.submit();
     });
+
+    document.getElementById('hidden_iframe').onload = function () {
+      if (submitted) {
+        alert('Driver info submitted successfully!');
+        submitted = false;
+
+        [...form.elements].forEach(el => {
+          if (el.tagName.toLowerCase() !== 'button') {
+            el.value = '';
+          }
+          el.disabled = false;
+        });
+
+        submitBtn.disabled = false;
+        loadingBarContainer.style.display = 'none';
+      }
+    };
   </script>
 </body>
 </html>
