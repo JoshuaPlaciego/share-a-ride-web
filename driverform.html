@@ -1,11 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Driver Registration - Share A Ride</title>
   <style>
-    /* Your styles unchanged */
     body {
       font-family: Arial, sans-serif;
       max-width: 500px;
@@ -80,7 +78,7 @@
     const submitBtn = document.getElementById('submitBtn');
     const mobileInput = document.getElementById('mobile');
 
-    // Restrict mobile input to digits and max 11 digits
+    // Mobile number validation
     mobileInput.addEventListener('input', function () {
       this.value = this.value.replace(/\D/g, '').slice(0, 11);
     });
@@ -98,7 +96,7 @@
       }
 
       if (!/^09\d{9}$/.test(mobile)) {
-        alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
+        alert('Please enter a valid mobile number starting with 09 and 11 digits.');
         return;
       }
 
