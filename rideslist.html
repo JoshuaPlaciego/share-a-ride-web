@@ -58,7 +58,7 @@
     async function fetchRides() {
       messageEl.textContent = 'Loading rides...';
       try {
-        const response = await fetch('YOUR_DEPLOYED_WEB_APP_URL');
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec');
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const data = await response.json();
@@ -67,7 +67,7 @@
           throw new Error(data.message || 'Failed to load rides');
         }
 
-        if (data.rides.length === 0) {
+        if (!data.rides || data.rides.length === 0) {
           messageEl.textContent = 'No rides available at the moment.';
           return;
         }
