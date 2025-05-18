@@ -54,7 +54,7 @@
       justify-content: center;
       align-items: center;
       z-index: 9999;
-      display: none; /* hidden by default */
+      display: none;
     }
     #loadingOverlay div {
       border: 6px solid #f3f3f3;
@@ -87,10 +87,12 @@
     <input type="date" id="pickupDate" name="pickupDate" required />
 
     <label for="pickupStartTime">Pickup Start Time</label>
-    <input type="time" id="pickupStartTime" name="pickupStartTime" required />
+    <input type="time" id="pickupStartTime" name="pickupStartTime" required step="60" />
+    <div class="note">Use 24-hour format (e.g., 08:00, 14:30).</div>
 
     <label for="pickupEndTime">Pickup End Time</label>
-    <input type="time" id="pickupEndTime" name="pickupEndTime" required />
+    <input type="time" id="pickupEndTime" name="pickupEndTime" required step="60" />
+    <div class="note">Use 24-hour format (e.g., 08:30, 15:00).</div>
 
     <label for="seats">Number of Seats to Offer</label>
     <input type="number" id="seats" name="seats" min="1" max="10" required />
@@ -159,17 +161,15 @@
       try {
         await fetch('https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec', {
           method: 'POST',
-          mode: 'no-cors', // avoid CORS but no response content
+          mode: 'no-cors',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(formData)
         });
-        // Store submitted data in sessionStorage
-sessionStorage.setItem('driverEntry', JSON.stringify(formData));
 
-// Redirect to display page
-window.location.href = 'driverDisplay.html';
+        sessionStorage.setItem('driverEntry', JSON.stringify(formData));
+        window.location.href = 'driverdisplay.html';
 
       } catch (error) {
         alert('Error submitting form: ' + error.message);

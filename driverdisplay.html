@@ -20,6 +20,12 @@
       border-radius: 5px;
       border: 1px solid #c3e6cb;
     }
+    .note {
+      font-size: 0.9em;
+      color: #555;
+      margin-bottom: 15px;
+      font-style: italic;
+    }
     .entry {
       background-color: white;
       padding: 15px;
@@ -49,6 +55,7 @@
 </head>
 <body>
   <div class="success">Ride info submitted successfully!</div>
+  <div class="note">* Times shown are in 24-hour format.</div>
   <div class="entry" id="driverDetails"></div>
 
   <div class="buttons">
@@ -60,16 +67,25 @@
     const data = JSON.parse(sessionStorage.getItem('driverEntry'));
 
     if (data) {
+      // Helper function to format time as HH:mm (24-hour)
+      function formatTime24(timeStr) {
+        if (!timeStr) return '';
+        const [h, m] = timeStr.split(':');
+        const hh = h.padStart(2, '0');
+        const mm = m.padStart(2, '0');
+        return `${hh}:${mm}`;
+      }
+
       const container = document.getElementById('driverDetails');
       container.innerHTML = `
         <p><strong>Name:</strong> ${data.name}</p>
         <p><strong>Mobile:</strong> ${data.mobile}</p>
         <p><strong>Pickup Location:</strong> ${data.pickupLocation}</p>
         <p><strong>Pickup Date:</strong> ${data.pickupDate}</p>
-        <p><strong>Pickup Start Time:</strong> ${data.pickupStartTime}</p>
-        <p><strong>Pickup End Time:</strong> ${data.pickupEndTime}</p>
-        <p><strong>Seats:</strong> ${data.seats}</p>
-        <p><strong>Other Info:</strong> ${data.otherInfo}</p>
+        <p><strong>Pickup Start Time:</strong> ${formatTime24(data.pickupStartTime)}</p>
+        <p><strong>Pickup End Time:</strong> ${formatTime24(data.pickupEndTime)}</p>
+        <p><strong>Seats You Offered:</strong> ${data.seats}</p>
+        <p><strong>Other Info:</strong> ${data.otherInfo || ''}</p>
       `;
     } else {
       document.body.innerHTML = '<p>No entry data found. Please go back and submit the form.</p>';
