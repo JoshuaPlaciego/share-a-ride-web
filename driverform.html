@@ -1,130 +1,129 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8" />
-  <title>Driver Registration - Share A Ride</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 20px auto;
-      padding: 15px;
-      background: #f9f9f9;
-      border-radius: 8px;
-    }
-    label {
-      display: block;
-      margin: 12px 0 6px;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 8px;
-      box-sizing: border-box;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-    button {
-      margin-top: 15px;
-      padding: 10px 15px;
-      background-color: #0078d7;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #005ea1;
-    }
-    .note {
-      font-size: 0.9em;
-      color: #555;
-      margin-top: 4px;
-    }
-  </style>
-</head>
-<body>
-  <h2>Driver Registration</h2>
-  <form id="driverForm" onsubmit="handleSubmit(event)">
-    <label for="name">Full Name</label>
-    <input type="text" id="name" name="name" required />
-
-    <label for="mobile">Mobile Number</label>
-    <input type="tel" id="mobile" name="mobile" maxlength="11" placeholder="09XXXXXXXXX" required />
-    <div class="note">Mobile number must start with "09" and contain exactly 11 digits.</div>
-
-    <label for="pickupLocation">Pickup Location</label>
-    <input type="text" id="pickupLocation" name="pickupLocation" required />
-
-    <label for="pickupDate">Pickup Date</label>
-    <input type="date" id="pickupDate" name="pickupDate" required />
-
-    <label for="pickupStartTime">Pickup Start Time</label>
-    <input type="time" id="pickupStartTime" name="pickupStartTime" required />
-
-    <label for="pickupEndTime">Pickup End Time</label>
-    <input type="time" id="pickupEndTime" name="pickupEndTime" required />
-
-    <label for="seats">Number of Seats to Offer</label>
-    <input type="number" id="seats" name="seats" min="1" max="10" required />
-
-    <label for="otherInfo">Other Info (Landmarks, Instructions)</label>
-    <textarea id="otherInfo" name="otherInfo" rows="3"></textarea>
-
-    <button type="submit" id="submitBtn">Submit</button>
-  </form>
-
-  <script>
-    const form = document.getElementById('driverForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const mobileInput = document.getElementById('mobile');
-
-    // Mobile number validation
-    mobileInput.addEventListener('input', function () {
-      this.value = this.value.replace(/\D/g, '').slice(0, 11);
-    });
-
-    function handleSubmit(event) {
-      event.preventDefault();
-
-      const start = document.getElementById('pickupStartTime').value;
-      const end = document.getElementById('pickupEndTime').value;
-      const mobile = mobileInput.value;
-
-      if (end <= start) {
-        alert('Pickup end time must be after the start time.');
-        return;
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <title>Driver Registration</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 500px;
+        margin: 20px auto;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 8px;
       }
-
-      if (!/^09\d{9}$/.test(mobile)) {
-        alert('Please enter a valid mobile number starting with 09 and 11 digits.');
-        return;
+      label {
+        display: block;
+        margin: 12px 0 6px;
       }
+      input, textarea {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+      }
+      button {
+        margin-top: 15px;
+        padding: 10px 15px;
+        background-color: #0078d7;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #005ea1;
+      }
+      .note {
+        font-size: 0.9em;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Driver Registration</h2>
+    <form id="driverForm">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" required>
 
-      submitBtn.disabled = true;
+      <label for="mobile">Mobile Number</label>
+      <input type="tel" id="mobile" name="mobile" maxlength="11" required placeholder="09XXXXXXXXX">
+      <div class="note">Must start with "09" and be 11 digits.</div>
 
-      const formData = {
-        name: form.name.value,
-        mobile: mobile,
-        pickupLocation: form.pickupLocation.value,
-        pickupDate: form.pickupDate.value,
-        pickupStartTime: form.pickupStartTime.value,
-        pickupEndTime: form.pickupEndTime.value,
-        seats: form.seats.value,
-        otherInfo: form.otherInfo.value
-      };
+      <label for="pickupLocation">Pickup Location</label>
+      <input type="text" id="pickupLocation" name="pickupLocation" required>
 
-      google.script.run
-        .withSuccessHandler(() => {
-          alert('Driver info submitted successfully!');
-          form.reset();
-          submitBtn.disabled = false;
-        })
-        .withFailureHandler(err => {
-          alert('Error submitting form: ' + err.message);
-          submitBtn.disabled = false;
-        })
-        .submitDriverInfo(formData);
-    }
-  </script>
-</body>
+      <label for="pickupDate">Pickup Date</label>
+      <input type="date" id="pickupDate" name="pickupDate" required>
+
+      <label for="pickupStartTime">Pickup Start Time</label>
+      <input type="time" id="pickupStartTime" name="pickupStartTime" required>
+
+      <label for="pickupEndTime">Pickup End Time</label>
+      <input type="time" id="pickupEndTime" name="pickupEndTime" required>
+
+      <label for="seats">Seats Offered</label>
+      <input type="number" id="seats" name="seats" min="1" max="10" required>
+
+      <label for="otherInfo">Other Info</label>
+      <textarea id="otherInfo" name="otherInfo" rows="3"></textarea>
+
+      <button type="submit" id="submitBtn">Submit</button>
+    </form>
+
+    <script>
+      const form = document.getElementById('driverForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const mobileInput = document.getElementById('mobile');
+
+      mobileInput.addEventListener('input', () => {
+        mobileInput.value = mobileInput.value.replace(/\D/g, '').slice(0, 11);
+      });
+
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const start = form.pickupStartTime.value;
+        const end = form.pickupEndTime.value;
+        const mobile = form.mobile.value;
+
+        if (end <= start) {
+          alert('Pickup end time must be after start time.');
+          return;
+        }
+
+        if (!/^09\d{9}$/.test(mobile)) {
+          alert('Mobile number must start with "09" and be 11 digits.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+
+        const data = {
+          name: form.name.value,
+          mobile: mobile,
+          pickupLocation: form.pickupLocation.value,
+          pickupDate: form.pickupDate.value,
+          pickupStartTime: form.pickupStartTime.value,
+          pickupEndTime: form.pickupEndTime.value,
+          seats: form.seats.value,
+          otherInfo: form.otherInfo.value
+        };
+
+        google.script.run
+          .withSuccessHandler(() => {
+            alert('Submission successful!');
+            form.reset();
+            submitBtn.disabled = false;
+          })
+          .withFailureHandler(error => {
+            alert('Submission failed: ' + error.message);
+            submitBtn.disabled = false;
+          })
+          .submitDriverInfo(data);
+      });
+    </script>
+  </body>
 </html>
