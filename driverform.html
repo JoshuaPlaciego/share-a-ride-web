@@ -115,16 +115,22 @@
       };
 
       try {
-        await fetch('https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec', {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec', {
           method: 'POST',
-          mode: 'no-cors', // avoids CORS error, but no response data available
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(formData)
         });
-        alert('Driver info submitted successfully!');
-        form.reset();
+
+        const data = await response.json();
+
+        if (data.result === 'success') {
+          alert('Driver info submitted successfully!');
+          form.reset();
+        } else {
+          alert('Submission failed: ' + (data.message || 'Unknown error'));
+        }
       } catch (error) {
         alert('Error submitting form: ' + error.message);
       } finally {
