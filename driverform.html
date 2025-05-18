@@ -70,7 +70,7 @@
     <input type="text" id="name" name="name" required />
 
     <label for="mobile">Mobile Number</label>
-    <input type="tel" id="mobile" name="mobile" placeholder="e.g. 09171234567" required />
+    <input type="tel" id="mobile" name="mobile" placeholder="e.g. 09171234567" maxlength="11" required />
     <div class="note">Mobile number must start with "09" and be exactly 11 digits.</div>
 
     <label for="pickupLocation">Pickup Location</label>
@@ -108,12 +108,18 @@
     const submitBtn = document.getElementById('submitBtn');
     const loadingBarContainer = document.getElementById('loadingBarContainer');
     const loadingBar = document.getElementById('loadingBar');
+    const mobileInput = document.getElementById('mobile');
+
+    // Limit to numbers only and max 11 digits
+    mobileInput.addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '').slice(0, 11);
+    });
 
     form.addEventListener('submit', function(e) {
-      const mobileInput = document.getElementById('mobile').value.trim();
+      const mobile = mobileInput.value.trim();
       const mobilePattern = /^09\d{9}$/; // must start with 09 and be 11 digits total
 
-      if (!mobilePattern.test(mobileInput)) {
+      if (!mobilePattern.test(mobile)) {
         alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
         e.preventDefault();
         return false;
@@ -128,7 +134,7 @@
         return false;
       }
 
-      e.preventDefault(); // control submission
+      e.preventDefault(); // prevent default and submit via iframe
       submitBtn.disabled = true;
 
       [...form.elements].forEach(el => {
