@@ -78,11 +78,10 @@
     <label for="pickupEndTime">Pickup End Time</label>
     <input type="time" id="pickupEndTime" name="pickupEndTime" required />
 
-    <!-- Number of seats first -->
+    <!-- Number of seats to offer -->
     <label for="seats">Number of Seats to Offer</label>
     <input type="number" id="seats" name="seats" min="1" max="10" required />
 
-    <!-- Other Info after seats -->
     <label for="otherInfo">Other Info (Landmarks, Instructions)</label>
     <textarea id="otherInfo" name="otherInfo" rows="3"></textarea>
 
@@ -104,6 +103,16 @@
     const loadingBar = document.getElementById('loadingBar');
 
     form.addEventListener('submit', function(e) {
+      const mobileInput = document.getElementById('mobile').value.trim();
+      const mobilePattern = /^\+?\d{10,15}$/;
+
+      // Validate mobile number format
+      if (!mobilePattern.test(mobileInput)) {
+        alert('Please enter a valid mobile number. It should contain only digits, optionally starting with +, and be 10 to 15 digits long.');
+        e.preventDefault();
+        return false;
+      }
+
       const start = document.getElementById('pickupStartTime').value;
       const end = document.getElementById('pickupEndTime').value;
 
@@ -115,6 +124,13 @@
 
       e.preventDefault(); // control submission
       submitBtn.disabled = true;
+
+      [...form.elements].forEach(el => {
+        if (el.tagName.toLowerCase() !== 'button') {
+          el.value = '';
+          el.disabled = true;
+        }
+      });
 
       loadingBarContainer.style.display = 'block';
       loadingBar.style.animation = 'none';
@@ -131,12 +147,8 @@
         submitted = false;
 
         [...form.elements].forEach(el => {
-          if (el.tagName.toLowerCase() !== 'button') {
-            el.value = '';
-            el.disabled = false;
-          }
+          el.disabled = false;
         });
-
         submitBtn.disabled = false;
         loadingBarContainer.style.display = 'none';
       }
