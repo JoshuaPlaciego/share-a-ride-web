@@ -38,35 +38,45 @@
       margin: 5px 0;
       color: #444;
     }
+    .message {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      margin-top: 30px;
+    }
   </style>
 </head>
 <body>
   <h2>Available Rides</h2>
   <div class="ride-list" id="rideList"></div>
+  <div class="message" id="message"></div>
 
   <script>
     const rideListEl = document.getElementById('rideList');
+    const messageEl = document.getElementById('message');
 
-    async function loadRides() {
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec';
+
+    async function fetchRides() {
       try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec');
+        const response = await fetch(API_URL, { method: 'GET' });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
         const rides = await response.json();
 
-        if (rides.result === 'error') {
-          rideListEl.innerHTML = `<p>Error loading rides: ${rides.message}</p>`;
+        if (!rides || rides.length === 0) {
+          messageEl.textContent = 'No rides available at the moment.';
           return;
         }
 
-        if (!Array.isArray(rides) || rides.length === 0) {
-          rideListEl.innerHTML = '<p>No rides available at the moment.</p>';
-          return;
-        }
+        messageEl.textContent = ''; // Clear message
 
         rides.forEach(ride => {
           const card = document.createElement('div');
           card.className = 'ride-card';
+
           card.innerHTML = `
-            <h3>${ride.name || 'Unknown'}</h3>
+            <h3>${ride.name || 'No Name'}</h3>
             <p><strong>Mobile:</strong> ${ride.mobile || 'N/A'}</p>
             <p><strong>Location:</strong> ${ride.pickupLocation || 'N/A'}</p>
             <p><strong>Date:</strong> ${ride.pickupDate || 'N/A'}</p>
@@ -74,15 +84,15 @@
             <p><strong>Seats:</strong> ${ride.seats || 'N/A'}</p>
             <p><strong>Notes:</strong> ${ride.otherInfo || ''}</p>
           `;
+
           rideListEl.appendChild(card);
         });
       } catch (error) {
-        rideListEl.innerHTML = `<p>Error loading rides: ${error.message}</p>`;
+        messageEl.textContent = 'Error loading rides: ' + error.message;
       }
     }
 
-    rideListEl.innerHTML = '';
-    loadRides();
+    fetchRides();
   </script>
 </body>
 </html>
