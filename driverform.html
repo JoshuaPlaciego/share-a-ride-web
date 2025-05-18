@@ -113,13 +113,11 @@
         return false;
       }
 
-      // On submit, clear the form visually & show loading bar
-      e.preventDefault(); // prevent default to control flow
+      e.preventDefault(); // control submission
 
-      // Disable submit button
       submitBtn.disabled = true;
 
-      // Hide form inputs by clearing values and disabling them
+      // Clear and disable inputs
       [...form.elements].forEach(el => {
         if (el.tagName.toLowerCase() !== 'button') {
           el.value = '';
@@ -127,13 +125,12 @@
         }
       });
 
-      // Show loading bar container and restart animation
+      // Show loading bar and restart animation properly
       loadingBarContainer.style.display = 'block';
       loadingBar.style.animation = 'none';
-      loadingBar.offsetHeight; // trigger reflow to restart animation
-      loadingBar.style.animation = null;
+      void loadingBar.offsetWidth; // trigger reflow
+      loadingBar.style.animation = 'loadingAnimation 3s linear forwards';
 
-      // Now submit the form via iframe to send data
       submitted = true;
       form.submit();
     });
