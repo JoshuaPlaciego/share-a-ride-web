@@ -38,61 +38,61 @@
       margin: 5px 0;
       color: #444;
     }
-    .message {
-      text-align: center;
-      color: #666;
-      font-style: italic;
-      margin-top: 30px;
-    }
   </style>
 </head>
 <body>
   <h2>Available Rides</h2>
-  <div class="ride-list" id="rideList"></div>
-  <div class="message" id="message"></div>
+  <div class="ride-list" id="rideList">Loading rides...</div>
 
   <script>
-    const rideListEl = document.getElementById('rideList');
-    const messageEl = document.getElementById('message');
+    // Put your published Google Apps Script URL here (the URL you get after deploying the web app)
+    const GSA_URL = 'https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec';
 
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec';
+    async function loadRides() {
+      const rideListEl = document.getElementById('rideList');
+      rideListEl.textContent = 'Loading rides...';
 
-    async function fetchRides() {
       try {
-        const response = await fetch(API_URL, { method: 'GET' });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const response = await fetch(GSA_URL, {
+          method: 'GET',
+          mode: 'cors'  // ensure CORS mode
+        });
+
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        }
 
         const rides = await response.json();
 
-        if (!rides || rides.length === 0) {
-          messageEl.textContent = 'No rides available at the moment.';
+        if (!rides.length) {
+          rideListEl.textContent = 'No rides available at the moment.';
           return;
         }
 
-        messageEl.textContent = ''; // Clear message
+        rideListEl.innerHTML = ''; // clear loading text
 
         rides.forEach(ride => {
           const card = document.createElement('div');
           card.className = 'ride-card';
-
           card.innerHTML = `
             <h3>${ride.name || 'No Name'}</h3>
-            <p><strong>Mobile:</strong> ${ride.mobile || 'N/A'}</p>
-            <p><strong>Location:</strong> ${ride.pickupLocation || 'N/A'}</p>
-            <p><strong>Date:</strong> ${ride.pickupDate || 'N/A'}</p>
-            <p><strong>Time:</strong> ${ride.pickupStartTime || 'N/A'} - ${ride.pickupEndTime || 'N/A'}</p>
-            <p><strong>Seats:</strong> ${ride.seats || 'N/A'}</p>
-            <p><strong>Notes:</strong> ${ride.otherInfo || ''}</p>
+            <p><strong>Mobile:</strong> ${ride.mobile || '-'}</p>
+            <p><strong>Location:</strong> ${ride.pickupLocation || '-'}</p>
+            <p><strong>Date:</strong> ${ride.pickupDate || '-'}</p>
+            <p><strong>Time:</strong> ${ride.pickupStartTime || '-'} - ${ride.pickupEndTime || '-'}</p>
+            <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
+            <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
           `;
-
           rideListEl.appendChild(card);
         });
+
       } catch (error) {
-        messageEl.textContent = 'Error loading rides: ' + error.message;
+        rideListEl.textContent = 'Error loading rides: ' + error.message;
+        console.error('Error fetching rides:', error);
       }
     }
 
-    fetchRides();
+    loadRides();
   </script>
 </body>
 </html>
