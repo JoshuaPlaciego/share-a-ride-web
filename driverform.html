@@ -36,11 +36,32 @@
     button:hover {
       background-color: #005ea1;
     }
+    /* Loading bar container */
+    #loadingBarContainer {
+      display: none;
+      width: 100%;
+      background-color: #ddd;
+      border-radius: 4px;
+      margin-top: 15px;
+      height: 20px;
+      overflow: hidden;
+    }
+    /* Loading bar fill animation */
+    #loadingBar {
+      height: 100%;
+      width: 0%;
+      background-color: #0078d7;
+      animation: loadingAnimation 3s linear forwards;
+    }
+    @keyframes loadingAnimation {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
   </style>
 </head>
 <body>
   <h2>Driver Registration</h2>
-  <form id="driverForm" method="POST" action="https://script.google.com/macros/s/AKfycbwrn3MDKx7UICkwlNTST1XM49JdNZrhtF344BE3aXCTcECjDEBuPwN3irjEVR9Rq4g7LA/exec" target="hidden_iframe" onsubmit="submitted=true;">
+  <form id="driverForm" method="POST" action="https://script.google.com/macros/s/AKfycbwrn3MDKx7UICkwlNTST1XM49JdNZrhtF344BE3aXCTcECjDEBuPwN3irjEVR9Rq4g7LA/exec" target="hidden_iframe">
     <label for="name">Full Name</label>
     <input type="text" id="name" name="name" required />
 
@@ -62,17 +83,27 @@
     <label for="otherInfo">Other Info (Landmarks, Instructions)</label>
     <textarea id="otherInfo" name="otherInfo" rows="3"></textarea>
 
-    <button type="submit">Submit</button>
+    <button type="submit" id="submitBtn">Submit</button>
   </form>
 
+  <!-- Loading bar -->
+  <div id="loadingBarContainer">
+    <div id="loadingBar"></div>
+  </div>
+
   <!-- Hidden iframe to prevent page reload on submit -->
-  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) { alert('Driver info submitted successfully!'); document.getElementById('driverForm').reset(); submitted=false; }"></iframe>
+  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
   <script>
     let submitted = false;
 
-    // Optional: Add validation for pickup times
-    document.getElementById('driverForm').addEventListener('submit', function(e) {
+    const form = document.getElementById('driverForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingBarContainer = document.getElementById('loadingBarContainer');
+    const loadingBar = document.getElementById('loadingBar');
+
+    // Validate pickup times
+    form.addEventListener('submit', function(e) {
       const start = document.getElementById('pickupStartTime').value;
       const end = document.getElementById('pickupEndTime').value;
 
@@ -81,7 +112,47 @@
         e.preventDefault();
         return false;
       }
+
+      // On submit, clear the form visually & show loading bar
+      e.preventDefault(); // prevent default to control flow
+
+      // Disable submit button
+      submitBtn.disabled = true;
+
+      // Hide form inputs by clearing values and disabling them
+      [...form.elements].forEach(el => {
+        if (el.tagName.toLowerCase() !== 'button') {
+          el.value = '';
+          el.disabled = true;
+        }
+      });
+
+      // Show loading bar container and restart animation
+      loadingBarContainer.style.display = 'block';
+      loadingBar.style.animation = 'none';
+      loadingBar.offsetHeight; // trigger reflow to restart animation
+      loadingBar.style.animation = null;
+
+      // Now submit the form via iframe to send data
+      submitted = true;
+      form.submit();
     });
+
+    // When iframe loads, submission finished
+    document.getElementById('hidden_iframe').onload = function() {
+      if (submitted) {
+        alert('Driver info submitted successfully!');
+        submitted = false;
+
+        // Reset form and re-enable inputs and button
+        [...form.elements].forEach(el => {
+          el.disabled = false;
+        });
+        submitBtn.disabled = false;
+
+        loadingBarContainer.style.display = 'none';
+      }
+    };
   </script>
 </body>
 </html>
