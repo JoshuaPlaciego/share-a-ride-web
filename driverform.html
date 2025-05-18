@@ -36,6 +36,11 @@
     button:hover {
       background-color: #005ea1;
     }
+    .note {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 4px;
+    }
     #loadingBarContainer {
       display: none;
       width: 100%;
@@ -55,12 +60,6 @@
       from { width: 0%; }
       to { width: 100%; }
     }
-    .note {
-      font-size: 0.9em;
-      color: #555;
-      margin-top: 4px;
-      margin-bottom: 12px;
-    }
   </style>
 </head>
 <body>
@@ -70,8 +69,8 @@
     <input type="text" id="name" name="name" required />
 
     <label for="mobile">Mobile Number</label>
-    <input type="tel" id="mobile" name="mobile" placeholder="e.g. 09171234567" maxlength="11" required />
-    <div class="note">Mobile number must start with "09" and be exactly 11 digits.</div>
+    <input type="tel" id="mobile" name="mobile" maxlength="11" placeholder="09XXXXXXXXX" pattern="^09\d{9}$" required />
+    <div class="note">Mobile number must start with "09" and contain exactly 11 digits.</div>
 
     <label for="pickupLocation">Pickup Location</label>
     <input type="text" id="pickupLocation" name="pickupLocation" required />
@@ -85,7 +84,6 @@
     <label for="pickupEndTime">Pickup End Time</label>
     <input type="time" id="pickupEndTime" name="pickupEndTime" required />
 
-    <!-- Number of seats to offer -->
     <label for="seats">Number of Seats to Offer</label>
     <input type="number" id="seats" name="seats" min="1" max="10" required />
 
@@ -108,41 +106,35 @@
     const submitBtn = document.getElementById('submitBtn');
     const loadingBarContainer = document.getElementById('loadingBarContainer');
     const loadingBar = document.getElementById('loadingBar');
-    const mobileInput = document.getElementById('mobile');
 
-    // Limit to numbers only and max 11 digits
-    mobileInput.addEventListener('input', function () {
+    // Prevent more than 11 digits on mobile field
+    document.getElementById('mobile').addEventListener('input', function () {
       this.value = this.value.replace(/\D/g, '').slice(0, 11);
     });
 
-    form.addEventListener('submit', function(e) {
-      const mobile = mobileInput.value.trim();
-      const mobilePattern = /^09\d{9}$/; // must start with 09 and be 11 digits total
-
-      if (!mobilePattern.test(mobile)) {
-        alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
-        e.preventDefault();
-        return false;
-      }
-
+    form.addEventListener('submit', function (e) {
       const start = document.getElementById('pickupStartTime').value;
       const end = document.getElementById('pickupEndTime').value;
+      const mobile = document.getElementById('mobile').value;
 
       if (end <= start) {
         alert('Pickup end time must be after the start time.');
         e.preventDefault();
-        return false;
+        return;
       }
 
-      e.preventDefault(); // prevent default and submit via iframe
-      submitBtn.disabled = true;
+      if (!/^09\d{9}$/.test(mobile)) {
+        alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
+        e.preventDefault();
+        return;
+      }
+
+      e.preventDefault(); // Prevent immediate submission
 
       [...form.elements].forEach(el => {
-        if (el.tagName.toLowerCase() !== 'button') {
-          el.value = '';
-          el.disabled = true;
-        }
+        el.disabled = true;
       });
+      submitBtn.disabled = true;
 
       loadingBarContainer.style.display = 'block';
       loadingBar.style.animation = 'none';
@@ -153,14 +145,18 @@
       form.submit();
     });
 
-    document.getElementById('hidden_iframe').onload = function() {
+    document.getElementById('hidden_iframe').onload = function () {
       if (submitted) {
         alert('Driver info submitted successfully!');
         submitted = false;
 
         [...form.elements].forEach(el => {
+          if (el.tagName.toLowerCase() !== 'button') {
+            el.value = '';
+          }
           el.disabled = false;
         });
+
         submitBtn.disabled = false;
         loadingBarContainer.style.display = 'none';
       }
