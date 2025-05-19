@@ -62,10 +62,14 @@
       <option value="" disabled selected>Select gender</option>
       <option value="Male">Male</option>
       <option value="Female">Female</option>
+      <option value="Other">Other</option>
     </select>
 
     <label for="mobile">Mobile Number</label>
     <input type="tel" id="mobile" name="mobile" placeholder="09XXXXXXXXX" maxlength="11" required />
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" placeholder="you@example.com" required />
 
     <label for="city">City of Residence</label>
     <select id="city" name="city" required>
@@ -96,52 +100,63 @@
       <option value="both">Both</option>
     </select>
 
+    <label for="messengerLink">Messenger Link (optional)</label>
+    <input type="url" id="messengerLink" name="messengerLink" placeholder="https://m.me/yourprofile" />
+
     <button type="submit">Register</button>
   </form>
 
   <script>
     const mobileInput = document.getElementById('mobile');
 
-    mobileInput.addEventListener('input', (e) => {
+    mobileInput.addEventListener('input', () => {
       let val = mobileInput.value;
 
-      // Remove any non-digit characters
       val = val.replace(/\D/g, '');
 
-      // Enforce max length 11
-      if (val.length > 11) {
-        val = val.slice(0, 11);
-      }
+      if (val.length > 11) val = val.slice(0, 11);
 
-      // Force first two digits to be '09'
-      if (val.length > 0 && val[0] !== '0') {
-        val = '0' + val.slice(1);
-      }
-      if (val.length > 1 && val[1] !== '9') {
-        val = val[0] + '9' + val.slice(2);
-      }
+      if (val.length > 0 && val[0] !== '0') val = '0' + val.slice(1);
+      if (val.length > 1 && val[1] !== '9') val = val[0] + '9' + val.slice(2);
 
       mobileInput.value = val;
     });
 
-    // Optional: Prevent typing anything but digits
     mobileInput.addEventListener('keypress', (e) => {
-      const allowed = '0123456789';
-      if (!allowed.includes(e.key)) {
-        e.preventDefault();
-      }
+      if (!'0123456789'.includes(e.key)) e.preventDefault();
     });
 
     const form = document.getElementById('registrationForm');
     form.addEventListener('submit', e => {
       e.preventDefault();
+
       if (mobileInput.value.length !== 11) {
         alert('Mobile number must be exactly 11 digits.');
         mobileInput.focus();
         return;
       }
-      // Add your form submission logic here
-      alert('Form submitted!');
+
+      // Collect form data
+      const userData = {
+        firstName: form.firstName.value.trim(),
+        lastName: form.lastName.value.trim(),
+        gender: form.gender.value,
+        mobile: mobileInput.value,
+        email: form.email.value.trim(),
+        city: form.city.value,
+        role: form.role.value,
+        messengerLink: form.messengerLink.value.trim()
+      };
+
+      // Call backend Apps Script function to register user
+      google.script.run.withSuccessHandler(response => {
+        alert(response.message);
+        if (response.status === 'ok') {
+          form.reset();
+        }
+      }).withFailureHandler(error => {
+        alert('Error: ' + error.message);
+      }).registerUser(userData);
     });
   </script>
 </body>
