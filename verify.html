@@ -40,7 +40,7 @@
       statusDiv.textContent = 'Verification token missing.';
       statusDiv.classList.add('error');
     } else {
-      fetch('https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec' + token)
+      fetch('https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec?token=' + token)
         .then(response => response.json())
         .then(data => {
           if (data.success) {
