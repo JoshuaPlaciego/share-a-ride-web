@@ -45,9 +45,9 @@
       margin-top: 40px;
     }
     .timer {
-      margin-top: 10px;
       font-weight: bold;
       color: #d9534f;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -60,27 +60,28 @@
     const rideListEl = document.getElementById('rideList');
     const messageEl = document.getElementById('message');
 
-    function formatDate(dateString) {
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      const date = new Date(dateString);
-      return isNaN(date) ? '-' : date.toLocaleDateString(undefined, options);
+    function formatDate(dateStr) {
+      const months = ["January", "February", "March", "April", "May", "June",
+                      "July", "August", "September", "October", "November", "December"];
+      const date = new Date(dateStr);
+      return `${months[date.getMonth()]}-${String(date.getDate()).padStart(2, '0')}-${date.getFullYear()}`;
     }
 
-    function formatPhone(phone) {
+    function formatPhoneNumber(phone) {
       if (!phone) return '-';
-      phone = phone.toString();
-      if (!phone.startsWith('09')) {
+      phone = phone.toString().trim();
+      if (!phone.startsWith('0')) {
         phone = '0' + phone;
       }
       return phone;
     }
 
-    function formatTime24To12(time24) {
+    function convertTo12Hour(time24) {
       if (!time24) return '-';
       const [hourStr, minute] = time24.split(':');
       let hour = parseInt(hourStr, 10);
       const ampm = hour >= 12 ? 'PM' : 'AM';
-      hour = hour % 12 || 12;
+      hour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
       return `${hour}:${minute} ${ampm}`;
     }
 
@@ -102,29 +103,24 @@
         }
 
         messageEl.textContent = ''; // clear loading message
-        rideListEl.innerHTML = '';
 
         data.rides.forEach(ride => {
           const card = document.createElement('div');
           card.className = 'ride-card';
-          card.innerHTML = `
-            <h3>${ride.name || 'No Name'}</h3>
-            <p><strong>Mobile:</strong> ${formatPhone(ride.mobile)}</p>
-            <p><strong>Location:</strong> ${ride.pickupLocation || '-'}</p>
-            <p><strong>Date:</strong> ${formatDate(ride.pickupDate)}</p>
-            <p><strong>Time:</strong> ${formatTime24To12(ride.pickupStartTime)} - ${formatTime24To12(ride.pickupEndTime)}</p>
-            <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
-            <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
-          `;
 
-          const timerEl = document.createElement('p');
+          const timerEl = document.createElement('div');
           timerEl.className = 'timer';
-
-          let intervalId;
 
           function updateTimer() {
             const now = new Date();
-            const pickupEndDateTime = new Date(`${ride.pickupDate}T${ride.pickupEndTime}:00`);
+
+            const pickupDateStr = ride.pickupDate.split('T')[0]; // Get just the date part YYYY-MM-DD
+            const pickupEndTimeStr = (ride.pickupEndTime && ride.pickupEndTime.length === 5) ? ride.pickupEndTime : '00:00';
+            const pickupEndDateTime = new Date(`${pickupDateStr}T${pickupEndTimeStr}:00`);
+
+            console.log('pickupEndDateTime:', pickupEndDateTime.toString());
+            console.log('Now:', now.toString());
+
             const timeRemaining = pickupEndDateTime - now;
 
             if (timeRemaining > 0) {
@@ -132,7 +128,7 @@
               const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
               const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
 
-              timerEl.textContent = `Driver expected to arrive and wait until: ${hours}h ${minutes}m ${seconds}s`;
+              timerEl.textContent = `Driver should have arrived and will wait until: ${hours}h ${minutes}m ${seconds}s`;
               if (!card.contains(timerEl)) card.appendChild(timerEl);
             } else {
               clearInterval(intervalId);
@@ -141,7 +137,20 @@
           }
 
           updateTimer();
-          intervalId = setInterval(updateTimer, 1000);
+          const intervalId = setInterval(updateTimer, 1000);
+
+          card.innerHTML = `
+            <h3>${ride.name || 'No Name'}</h3>
+            <p><strong>Mobile:</strong> ${formatPhoneNumber(ride.mobile)}</p>
+            <p><strong>Location:</strong> ${ride.pickupLocation || '-'}</p>
+            <p><strong>Date:</strong> ${formatDate(ride.pickupDate)}</p>
+            <p><strong>Time:</strong> ${convertTo12Hour(ride.pickupStartTime)} - ${convertTo12Hour(ride.pickupEndTime)}</p>
+            <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
+            <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
+          `;
+
+          // Append timer after other info
+          card.appendChild(timerEl);
 
           rideListEl.appendChild(card);
         });
