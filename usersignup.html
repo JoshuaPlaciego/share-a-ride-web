@@ -57,15 +57,16 @@
     <label for="lastName">Last Name</label>
     <input type="text" id="lastName" name="lastName" required />
 
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" placeholder="example@email.com" required />
-
     <label for="gender">Gender</label>
     <select id="gender" name="gender" required>
       <option value="" disabled selected>Select gender</option>
       <option value="Male">Male</option>
       <option value="Female">Female</option>
+      <option value="Other">Other</option>
     </select>
+
+    <label for="email">Email Address</label>
+    <input type="email" id="email" name="email" required />
 
     <label for="mobile">Mobile Number</label>
     <input type="tel" id="mobile" name="mobile" placeholder="09XXXXXXXXX" maxlength="11" required />
@@ -73,22 +74,22 @@
     <label for="city">City of Residence</label>
     <select id="city" name="city" required>
       <option value="" disabled selected>Select city</option>
-      <option value="Caloocan">Caloocan</option>
-      <option value="Las Piñas">Las Piñas</option>
-      <option value="Makati">Makati</option>
-      <option value="Malabon">Malabon</option>
-      <option value="Mandaluyong">Mandaluyong</option>
-      <option value="Marikina">Marikina</option>
-      <option value="Muntinlupa">Muntinlupa</option>
-      <option value="Navotas">Navotas</option>
-      <option value="Parañaque">Parañaque</option>
-      <option value="Pasay">Pasay</option>
-      <option value="Pasig">Pasig</option>
-      <option value="Quezon City">Quezon City</option>
-      <option value="San Juan">San Juan</option>
-      <option value="Taguig">Taguig</option>
-      <option value="Valenzuela">Valenzuela</option>
-      <option value="Manila">Manila</option>
+      <option>Caloocan</option>
+      <option>Las Piñas</option>
+      <option>Makati</option>
+      <option>Malabon</option>
+      <option>Mandaluyong</option>
+      <option>Marikina</option>
+      <option>Muntinlupa</option>
+      <option>Navotas</option>
+      <option>Parañaque</option>
+      <option>Pasay</option>
+      <option>Pasig</option>
+      <option>Quezon City</option>
+      <option>San Juan</option>
+      <option>Taguig</option>
+      <option>Valenzuela</option>
+      <option>Manila</option>
     </select>
 
     <label for="role">Role</label>
@@ -99,15 +100,18 @@
       <option value="both">Both</option>
     </select>
 
+    <label for="messengerLink">Messenger Link</label>
+    <input type="url" id="messengerLink" name="messengerLink" placeholder="https://m.me/yourusername" required />
+
     <button type="submit">Register</button>
   </form>
 
   <script>
+    const form = document.getElementById('registrationForm');
     const mobileInput = document.getElementById('mobile');
 
     mobileInput.addEventListener('input', (e) => {
-      let val = mobileInput.value;
-      val = val.replace(/\D/g, '');
+      let val = mobileInput.value.replace(/\D/g, '');
       if (val.length > 11) val = val.slice(0, 11);
       if (val.length > 0 && val[0] !== '0') val = '0' + val.slice(1);
       if (val.length > 1 && val[1] !== '9') val = val[0] + '9' + val.slice(2);
@@ -115,25 +119,48 @@
     });
 
     mobileInput.addEventListener('keypress', (e) => {
-      const allowed = '0123456789';
-      if (!allowed.includes(e.key)) e.preventDefault();
+      if (!'0123456789'.includes(e.key)) e.preventDefault();
     });
 
-    const form = document.getElementById('registrationForm');
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       if (mobileInput.value.length !== 11) {
         alert('Mobile number must be exactly 11 digits.');
         mobileInput.focus();
         return;
       }
 
-      // You can add further validation here if you want
+      const formData = {
+        firstName: form.firstName.value.trim(),
+        lastName: form.lastName.value.trim(),
+        gender: form.gender.value,
+        email: form.email.value.trim(),
+        mobile: form.mobile.value.trim(),
+        city: form.city.value,
+        role: form.role.value,
+        messengerLink: form.messengerLink.value.trim(),
+      };
 
-      // For now just simulate submission
-      alert('Form submitted! We will send you a verification email.');
-      // Add actual form submission logic (POST) to your backend or Google Apps Script endpoint here
+      try {
+        const response = await fetch('YOUR_GOOGLE_SCRIPT_WEBAPP_URL', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert('Registration successful! Check your email for the magic link.');
+          form.reset();
+        } else {
+          alert('Error: ' + result.message);
+        }
+      } catch (error) {
+        alert('Request failed: ' + error.message);
+      }
     });
   </script>
 </body>
