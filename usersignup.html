@@ -5,103 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Signup - Share A Ride</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 480px; margin: auto; }
+    body { font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 20px; }
     label { display: block; margin-top: 12px; }
-    input, select { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
-    button { margin-top: 16px; padding: 10px 20px; font-size: 1rem; }
-    .message { margin-top: 16px; }
-    footer { margin-top: 40px; font-size: 0.8rem; color: #666; text-align: center; }
-    a.github-link { color: #0366d6; text-decoration: none; }
+    input, select { width: 100%; padding: 8px; margin-top: 4px; }
+    button { margin-top: 16px; padding: 10px 20px; }
+    .message { margin-top: 20px; }
   </style>
 </head>
 <body>
 
   <h2>Signup for Share A Ride</h2>
-  
+
   <form id="signupForm">
-    <label for="firstName">First Name *</label>
-    <input id="firstName" name="firstName" type="text" required />
+    <label>First Name *</label>
+    <input name="firstName" type="text" required />
 
-    <label for="lastName">Last Name *</label>
-    <input id="lastName" name="lastName" type="text" required />
+    <label>Last Name *</label>
+    <input name="lastName" type="text" required />
 
-    <label for="mobile">Mobile Number</label>
-    <input id="mobile" name="mobile" type="tel" />
+    <label>Mobile Number</label>
+    <input name="mobile" type="tel" />
 
-    <label for="city">City of Residence</label>
-    <input id="city" name="city" type="text" />
+    <label>City of Residence</label>
+    <input name="city" type="text" />
 
-    <label for="role">Role</label>
-    <select id="role" name="role">
+    <label>Role</label>
+    <select name="role">
       <option value="Driver">Driver</option>
       <option value="Rider">Rider</option>
       <option value="Both">Both</option>
     </select>
 
-    <label for="messengerLink">Messenger Link</label>
-    <input id="messengerLink" name="messengerLink" type="url" placeholder="https://m.me/yourprofile" />
+    <label>Messenger Link</label>
+    <input name="messengerLink" type="url" placeholder="https://m.me/yourprofile" />
 
-    <label for="gender">Gender</label>
-    <select id="gender" name="gender" required>
+    <label>Gender *</label>
+    <select name="gender" required>
       <option value="">Select gender</option>
       <option value="Male">Male</option>
       <option value="Female">Female</option>
     </select>
 
-    <label for="email">Email Address *</label>
-    <input id="email" name="email" type="email" required />
+    <label>Email Address *</label>
+    <input name="email" type="email" required />
 
     <button type="submit">Sign Up</button>
   </form>
 
   <div class="message" id="message"></div>
 
-  <footer>
-    <p>Project by <a href="https://github.com/yourgithubusername" target="_blank" rel="noopener" class="github-link">yourgithubusername</a></p>
-  </footer>
-
   <script>
     const form = document.getElementById("signupForm");
-    const messageDiv = document.getElementById("message");
+    const msg = document.getElementById("message");
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const formData = {
-        firstName: form.firstName.value.trim(),
-        lastName: form.lastName.value.trim(),
-        mobile: form.mobile.value.trim(),
-        city: form.city.value.trim(),
-        role: form.role.value,
-        messengerLink: form.messengerLink.value.trim(),
-        gender: form.gender.value,
-        email: form.email.value.trim()
-      };
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      msg.textContent = "";
+      const formData = Object.fromEntries(new FormData(form));
 
       try {
-        const response = await fetch("https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec", {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: {"Content-Type": "application/json"},
           mode: "cors",
           body: JSON.stringify(formData)
         });
-
-        const result = await response.json();
-
-        if (result.status === "success") {
-          messageDiv.style.color = "green";
-          messageDiv.textContent = result.message;
+        const data = await res.json();
+        if (data.status === "success") {
+          msg.style.color = "green";
+          msg.textContent = data.message;
           form.reset();
         } else {
-          messageDiv.style.color = "red";
-          messageDiv.textContent = result.message || "Signup failed.";
+          msg.style.color = "red";
+          msg.textContent = data.message || "Signup failed.";
         }
-      } catch (error) {
-        messageDiv.style.color = "red";
-        messageDiv.textContent = "Error: Could not connect to server.";
-        console.error("Signup error:", error);
+      } catch (err) {
+        msg.style.color = "red";
+        msg.textContent = "Error connecting to server.";
+        console.error(err);
       }
     });
   </script>
