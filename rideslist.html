@@ -133,7 +133,7 @@
             const endDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMin);
 
             if (now >= startDateTime) {
-              timerEl.textContent = "Driver should have arrived and waiting until ";
+              let intervalId = null;
 
               const updateTimer = () => {
                 const diffMs = endDateTime - new Date();
@@ -150,7 +150,7 @@
               };
 
               updateTimer();
-              const intervalId = setInterval(updateTimer, 1000);
+              intervalId = setInterval(updateTimer, 1000);
             }
           }
         });
