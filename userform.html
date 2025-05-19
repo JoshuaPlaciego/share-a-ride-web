@@ -60,13 +60,13 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(form).entries());
-<script>
+
+      
+      <script>
   alert('Form JS loaded!');
   const form = document.getElementById('signupForm');
   // … rest of your JS …
-</script>
-
-      google.script.run
+</script>google.script.run
         .withSuccessHandler(res => {
           msg.style.color = res.success ? 'green' : 'red';
           msg.textContent   = res.message;
