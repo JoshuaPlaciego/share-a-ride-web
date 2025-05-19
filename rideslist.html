@@ -42,12 +42,14 @@
     .timer {
       margin-top: 10px;
       font-weight: bold;
-      color: #d9534f;
     }
     .note {
       margin-top: 6px;
       font-style: italic;
       color: #555;
+    }
+    .countdown {
+      color: #d9534f; /* red color for countdown */
     }
     .message {
       text-align: center;
@@ -66,23 +68,20 @@
     const rideListEl = document.getElementById('rideList');
     const messageEl = document.getElementById('message');
 
-    // Convert date string (ISO format) to "MMMM-dd-yyyy"
     function formatDate(dateStr) {
       const options = { year: 'numeric', month: 'long', day: '2-digit' };
       const date = new Date(dateStr);
       return date.toLocaleDateString(undefined, options);
     }
 
-    // Convert 24-hour time (HH:mm) to 12-hour AM/PM
     function formatTime24to12(time24) {
       if (!time24) return '-';
       let [hour, minute] = time24.split(':').map(Number);
       const ampm = hour >= 12 ? 'PM' : 'AM';
-      hour = hour % 12 || 12; // convert 0 to 12 for 12AM
+      hour = hour % 12 || 12;
       return `${hour}:${minute.toString().padStart(2, '0')} ${ampm}`;
     }
 
-    // Format mobile number to add leading zero if missing
     function formatMobile(mobile) {
       if (!mobile) return '-';
       mobile = mobile.toString();
@@ -92,7 +91,6 @@
       return mobile;
     }
 
-    // Format countdown time in hh:mm:ss format
     function formatCountdown(seconds) {
       const h = Math.floor(seconds / 3600);
       const m = Math.floor((seconds % 3600) / 60);
@@ -121,13 +119,12 @@
           return;
         }
 
-        messageEl.textContent = ''; // clear loading message
+        messageEl.textContent = '';
 
         data.rides.forEach(ride => {
           const card = document.createElement('div');
           card.className = 'ride-card';
 
-          // Create formatted date and times
           const formattedDate = formatDate(ride.pickupDate);
           const pickupStart12h = formatTime24to12(ride.pickupStartTime);
           const pickupEnd12h = formatTime24to12(ride.pickupEndTime);
@@ -141,13 +138,12 @@
             <p><strong>Time:</strong> ${pickupStart12h} - ${pickupEnd12h}</p>
             <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
             <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
-            <div class="timer" id="timer-${ride.timestamp}"></div>
             <div class="note" id="note-${ride.timestamp}"></div>
+            <div class="timer" id="timer-${ride.timestamp}"></div>
           `;
 
           rideListEl.appendChild(card);
 
-          // Timer logic
           startCountdownTimer(ride.timestamp, ride.pickupStartTime, ride.pickupEndTime);
         });
       } catch (error) {
@@ -161,7 +157,6 @@
       const noteEl = document.getElementById(`note-${timestamp}`);
       if (!timerEl || !noteEl) return;
 
-      // Parse times (24-hour format assumed)
       const now = new Date();
       const [startHour, startMin] = pickupStartTime.split(':').map(Number);
       const [endHour, endMin] = pickupEndTime.split(':').map(Number);
@@ -169,7 +164,6 @@
       const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin);
       const endDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMin);
 
-      // Clear previous interval if any (precaution)
       if (timerEl._intervalId) {
         clearInterval(timerEl._intervalId);
       }
@@ -178,16 +172,14 @@
         const now = new Date();
 
         if (now < startDateTime) {
-          // Before pickup start time - no timer or note shown
           timerEl.textContent = '';
           noteEl.textContent = '';
           return;
         } else if (now >= startDateTime && now <= endDateTime) {
-          // During pickup window - show timer and note
           const secondsLeft = Math.floor((endDateTime - now) / 1000);
-          timerEl.textContent = 'Driver should have arrived and is waiting within: ' + formatCountdown(secondsLeft);
+          noteEl.textContent = 'Driver should have arrived and is waiting until:';
+          timerEl.innerHTML = `<span class="countdown">${formatCountdown(secondsLeft)}</span>`;
         } else {
-          // After pickup end time - hide ride (remove card)
           const card = timerEl.closest('.ride-card');
           if (card) card.remove();
           clearInterval(timerEl._intervalId);
