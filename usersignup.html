@@ -45,10 +45,6 @@
     button:hover {
       background-color: #005fa3;
     }
-    .message {
-      margin-top: 15px;
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
@@ -61,12 +57,14 @@
     <label for="lastName">Last Name</label>
     <input type="text" id="lastName" name="lastName" required />
 
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" placeholder="example@email.com" required />
+
     <label for="gender">Gender</label>
     <select id="gender" name="gender" required>
       <option value="" disabled selected>Select gender</option>
       <option value="Male">Male</option>
       <option value="Female">Female</option>
-      <option value="Other">Other</option>
     </select>
 
     <label for="mobile">Mobile Number</label>
@@ -75,22 +73,22 @@
     <label for="city">City of Residence</label>
     <select id="city" name="city" required>
       <option value="" disabled selected>Select city</option>
-      <option>Caloocan</option>
-      <option>Las Piñas</option>
-      <option>Makati</option>
-      <option>Malabon</option>
-      <option>Mandaluyong</option>
-      <option>Marikina</option>
-      <option>Muntinlupa</option>
-      <option>Navotas</option>
-      <option>Parañaque</option>
-      <option>Pasay</option>
-      <option>Pasig</option>
-      <option>Quezon City</option>
-      <option>San Juan</option>
-      <option>Taguig</option>
-      <option>Valenzuela</option>
-      <option>Manila</option>
+      <option value="Caloocan">Caloocan</option>
+      <option value="Las Piñas">Las Piñas</option>
+      <option value="Makati">Makati</option>
+      <option value="Malabon">Malabon</option>
+      <option value="Mandaluyong">Mandaluyong</option>
+      <option value="Marikina">Marikina</option>
+      <option value="Muntinlupa">Muntinlupa</option>
+      <option value="Navotas">Navotas</option>
+      <option value="Parañaque">Parañaque</option>
+      <option value="Pasay">Pasay</option>
+      <option value="Pasig">Pasig</option>
+      <option value="Quezon City">Quezon City</option>
+      <option value="San Juan">San Juan</option>
+      <option value="Taguig">Taguig</option>
+      <option value="Valenzuela">Valenzuela</option>
+      <option value="Manila">Manila</option>
     </select>
 
     <label for="role">Role</label>
@@ -102,59 +100,40 @@
     </select>
 
     <button type="submit">Register</button>
-
-    <div class="message" id="message"></div>
   </form>
 
   <script>
+    const mobileInput = document.getElementById('mobile');
+
+    mobileInput.addEventListener('input', (e) => {
+      let val = mobileInput.value;
+      val = val.replace(/\D/g, '');
+      if (val.length > 11) val = val.slice(0, 11);
+      if (val.length > 0 && val[0] !== '0') val = '0' + val.slice(1);
+      if (val.length > 1 && val[1] !== '9') val = val[0] + '9' + val.slice(2);
+      mobileInput.value = val;
+    });
+
+    mobileInput.addEventListener('keypress', (e) => {
+      const allowed = '0123456789';
+      if (!allowed.includes(e.key)) e.preventDefault();
+    });
+
     const form = document.getElementById('registrationForm');
-    const messageDiv = document.getElementById('message');
-
-    // Replace this with your actual Google Apps Script Web App URL that handles registration
-    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec';
-
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', e => {
       e.preventDefault();
-      messageDiv.textContent = '';
 
-      // Simple validation for mobile number length and starting digits
-      const mobile = form.mobile.value.trim();
-      if (!/^09\d{9}$/.test(mobile)) {
-        messageDiv.style.color = 'red';
-        messageDiv.textContent = 'Mobile number must be 11 digits starting with 09.';
+      if (mobileInput.value.length !== 11) {
+        alert('Mobile number must be exactly 11 digits.');
+        mobileInput.focus();
         return;
       }
 
-      const data = {
-        firstName: form.firstName.value.trim(),
-        lastName: form.lastName.value.trim(),
-        gender: form.gender.value,
-        mobile: mobile,
-        city: form.city.value,
-        role: form.role.value
-      };
+      // You can add further validation here if you want
 
-      try {
-        const res = await fetch(GAS_WEB_APP_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'registerUser', data })
-        });
-
-        const result = await res.json();
-
-        if (result.success) {
-          messageDiv.style.color = 'green';
-          messageDiv.textContent = 'Registration successful! Please check your email for the magic link to verify your account.';
-          form.reset();
-        } else {
-          messageDiv.style.color = 'red';
-          messageDiv.textContent = 'Error: ' + (result.message || 'Unknown error');
-        }
-      } catch (err) {
-        messageDiv.style.color = 'red';
-        messageDiv.textContent = 'Failed to send registration: ' + err.message;
-      }
+      // For now just simulate submission
+      alert('Form submitted! We will send you a verification email.');
+      // Add actual form submission logic (POST) to your backend or Google Apps Script endpoint here
     });
   </script>
 </body>
