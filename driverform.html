@@ -134,4 +134,89 @@
     const loadingOverlay = document.getElementById('loadingOverlay');
 
     // ======= Updated mobile input validation start =======
-    // Restrict mobile input to digi
+    // Restrict mobile input to digits, max 11 digits, force start with "09"
+    mobileInput.addEventListener('input', function () {
+      let val = this.value.replace(/\D/g, '').slice(0, 11);
+
+      // Force first two digits to "09"
+      if (val.length > 0 && val[0] !== '0') {
+        val = '0' + val.slice(1);
+      }
+      if (val.length > 1 && val[1] !== '9') {
+        val = val[0] + '9' + val.slice(2);
+      }
+
+      this.value = val;
+    });
+
+    // Prevent typing anything other than digits
+    mobileInput.addEventListener('keypress', function(e) {
+      const allowed = '0123456789';
+      if (!allowed.includes(e.key)) {
+        e.preventDefault();
+      }
+    });
+    // ======= Updated mobile input validation end =======
+
+    function showLoading() {
+      loadingOverlay.style.display = 'flex';
+    }
+
+    function hideLoading() {
+      loadingOverlay.style.display = 'none';
+    }
+
+    async function handleSubmit(event) {
+      event.preventDefault();
+
+      const start = document.getElementById('pickupStartTime').value;
+      const end = document.getElementById('pickupEndTime').value;
+      const mobile = mobileInput.value;
+
+      if (end <= start) {
+        alert('Pickup end time must be after the start time.');
+        return;
+      }
+
+      if (!/^09\d{9}$/.test(mobile)) {
+        alert('Please enter a valid mobile number that starts with "09" and is exactly 11 digits.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      showLoading();
+
+      const formData = {
+        name: form.name.value,
+        mobile: mobile,
+        pickupLocation: form.pickupLocation.value,
+        pickupDate: form.pickupDate.value,
+        pickupStartTime: form.pickupStartTime.value,
+        pickupEndTime: form.pickupEndTime.value,
+        seats: form.seats.value,
+        otherInfo: form.otherInfo.value
+      };
+
+      try {
+        await fetch('https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        sessionStorage.setItem('driverEntry', JSON.stringify(formData));
+        window.location.href = 'driverdisplay.html';
+
+      } catch (error) {
+        alert('Error submitting form: ' + error.message);
+      } finally {
+        submitBtn.disabled = false;
+        hideLoading();
+      }
+    }
+  </script>
+</body>
+</html>
