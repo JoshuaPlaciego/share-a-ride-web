@@ -185,8 +185,7 @@
         } else if (now >= startDateTime && now <= endDateTime) {
           // During pickup window - show timer and note
           const secondsLeft = Math.floor((endDateTime - now) / 1000);
-          timerEl.textContent = 'Time left to join ride: ' + formatCountdown(secondsLeft);
-          noteEl.textContent = 'Driver should have arrived and is waiting until the ride end time.';
+          timerEl.textContent = 'Driver should have arrived and is waiting within: ' + formatCountdown(secondsLeft);
         } else {
           // After pickup end time - hide ride (remove card)
           const card = timerEl.closest('.ride-card');
