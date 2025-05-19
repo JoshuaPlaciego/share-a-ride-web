@@ -24,32 +24,46 @@
       background: white;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 16px;
+      padding: 0;
       transition: transform 0.2s;
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
     .ride-card:hover {
       transform: translateY(-5px);
     }
+    .ride-header {
+      background: #f9f9f9;
+      border-bottom: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+    }
+    .ride-timer-panel {
+      background: #fff8f8;
+      border-bottom: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    .ride-details-panel {
+      padding: 16px;
+    }
     .ride-card h3 {
-      margin: 0 0 10px;
+      margin: 0;
       color: #0078d7;
     }
     .ride-card p {
-      margin: 5px 0;
+      margin: 6px 0;
       color: #444;
     }
     .timer {
-      margin-top: 10px;
       font-weight: bold;
+      color: #d9534f;
+      margin-top: 4px;
     }
     .note {
-      margin-top: 6px;
       font-style: italic;
-      color: #555;
-    }
-    .countdown {
-      color: #d9534f; /* red color for countdown */
+      color: #000;
     }
     .message {
       text-align: center;
@@ -131,19 +145,24 @@
           const formattedMobile = formatMobile(ride.mobile);
 
           card.innerHTML = `
-            <h3>${ride.name || 'No Name'}</h3>
-            <p><strong>Mobile:</strong> ${formattedMobile}</p>
-            <p><strong>Location:</strong> ${ride.pickupLocation || '-'}</p>
-            <p><strong>Date:</strong> ${formattedDate}</p>
-            <p><strong>Time:</strong> ${pickupStart12h} - ${pickupEnd12h}</p>
-            <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
-            <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
-            <div class="note" id="note-${ride.timestamp}"></div>
-            <div class="timer" id="timer-${ride.timestamp}"></div>
+            <div class="ride-header">
+              <h3>${ride.name || 'No Name'}</h3>
+            </div>
+            <div class="ride-timer-panel">
+              <div class="note" id="note-${ride.timestamp}"></div>
+              <div class="timer" id="timer-${ride.timestamp}"></div>
+            </div>
+            <div class="ride-details-panel">
+              <p><strong>Mobile:</strong> ${formattedMobile}</p>
+              <p><strong>Location:</strong> ${ride.pickupLocation || '-'}</p>
+              <p><strong>Date:</strong> ${formattedDate}</p>
+              <p><strong>Time:</strong> ${pickupStart12h} - ${pickupEnd12h}</p>
+              <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
+              <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
+            </div>
           `;
 
           rideListEl.appendChild(card);
-
           startCountdownTimer(ride.timestamp, ride.pickupStartTime, ride.pickupEndTime);
         });
       } catch (error) {
@@ -164,9 +183,7 @@
       const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin);
       const endDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMin);
 
-      if (timerEl._intervalId) {
-        clearInterval(timerEl._intervalId);
-      }
+      if (timerEl._intervalId) clearInterval(timerEl._intervalId);
 
       function updateTimer() {
         const now = new Date();
@@ -174,11 +191,10 @@
         if (now < startDateTime) {
           timerEl.textContent = '';
           noteEl.textContent = '';
-          return;
         } else if (now >= startDateTime && now <= endDateTime) {
           const secondsLeft = Math.floor((endDateTime - now) / 1000);
           noteEl.textContent = 'Driver should have arrived and is waiting until:';
-          timerEl.innerHTML = `<span class="countdown">${formatCountdown(secondsLeft)}</span>`;
+          timerEl.textContent = formatCountdown(secondsLeft);
         } else {
           const card = timerEl.closest('.ride-card');
           if (card) card.remove();
