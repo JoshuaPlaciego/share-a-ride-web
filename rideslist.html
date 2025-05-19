@@ -78,8 +78,9 @@
 
     function formatMobile(mobile) {
       if (!mobile) return '-';
-      if (mobile.startsWith('9')) return '0' + mobile;
-      return mobile;
+      const mobileStr = mobile.toString();
+      if (mobileStr.startsWith('9')) return '0' + mobileStr;
+      return mobileStr;
     }
 
     async function fetchRides() {
