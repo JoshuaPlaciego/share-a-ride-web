@@ -1,38 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Verify Your Email</title>
+  <title>Verify Account</title>
+  <meta charset="UTF-8">
 </head>
 <body>
   <h2>Email Verification</h2>
-  <p id="status">Verifying...</p>
+  <p id="result">Verifying...</p>
 
   <script>
-    async function verifyToken() {
+    async function verifyUser() {
       const params = new URLSearchParams(window.location.search);
+      const email = params.get('email');
       const token = params.get('token');
 
-      if (!token) {
-        document.getElementById('status').textContent = 'Invalid verification link.';
+      if (!email || !token) {
+        document.getElementById('result').innerText = 'Missing verification parameters.';
         return;
       }
 
       try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec', {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'verify', token })
-        });
-
-        const result = await response.json();
-        document.getElementById('status').textContent = result.message;
+        const res = await fetch(`https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`);
+        const text = await res.text();
+        document.getElementById('result').innerText = text;
       } catch (err) {
-        document.getElementById('status').textContent = 'Error verifying your account.';
+        document.getElementById('result').innerText = 'Verification failed. Try again later.';
       }
     }
 
-    verifyToken();
+    verifyUser();
   </script>
 </body>
 </html>
