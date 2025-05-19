@@ -3,17 +3,17 @@
 <head>
   <base target="_top">
   <meta charset="UTF-8">
-  <title>Share‑A‑Ride Registration</title>
+  <title>Share‑A‑Ride Sign Up</title>
   <style>
-    body { font-family: Arial,sans-serif; max-width:400px; margin:2rem auto; }
-    label { display:block; margin-top:1rem; }
-    input, select, button { width:100%; padding:.5rem; margin-top:.3rem; }
-    button { background:#007bff; color:#fff; border:none; cursor:pointer; }
-    #msg { margin-top:1rem; font-weight:bold; }
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 2rem auto; }
+    label { display: block; margin-top: 1rem; }
+    input, select, button { width: 100%; padding: .5rem; margin-top: .3rem; }
+    button { background: #007bff; color: #fff; border: none; cursor: pointer; }
+    #msg { margin-top: 1rem; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h2>Sign Up for Share‑A‑Ride</h2>
+  <h2>Sign Up</h2>
   <form id="signupForm">
     <label>First Name
       <input type="text" name="firstName" required>
@@ -29,7 +29,7 @@
         <option>Other</option>
       </select>
     </label>
-    <label>Mobile Number
+    <label>Mobile
       <input type="tel" name="mobile" required>
     </label>
     <label>City of Residence
@@ -44,7 +44,7 @@
       </select>
     </label>
     <label>Messenger Link
-      <input type="url" name="messenger" placeholder="https://m.me/yourname" required>
+      <input type="url" name="messenger" required>
     </label>
     <label>Email Address
       <input type="email" name="email" required>
@@ -66,6 +66,10 @@
           msg.style.color = res.success ? 'green' : 'red';
           msg.textContent   = res.message;
           if (res.success) form.reset();
+        })
+        .withFailureHandler(err => {
+          msg.style.color = 'red';
+          msg.textContent   = 'Error: ' + err.message;
         })
         .registerUser(data);
     });
