@@ -1,57 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Verify Account - Share A Ride</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 20px; text-align: center; }
-    .status { font-size: 1.2rem; margin-top: 40px; }
-    .success { color: green; }
-    .error { color: red; }
-  </style>
+  <title>User Verify</title>
 </head>
 <body>
-
   <h2>Verify Your Account</h2>
-  <div class="status" id="status">Verifying...</div>
+  <form id="verifyForm">
+    <label>Verification Token:</label><br/>
+    <input type="text" id="token" required><br/><br/>
+    <button type="submit">Verify</button>
+  </form>
+
+  <p id="message"></p>
 
   <script>
-    async function verify() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token');
-      const statusEl = document.getElementById("status");
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec";
 
-      if (!token) {
-        statusEl.textContent = "No token provided.";
-        statusEl.className = "status error";
-        return;
-      }
+    document.getElementById("verifyForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const token = document.getElementById("token").value.trim();
 
-      try {
-        const res = await fetch(`https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec?token=${encodeURIComponent(token)}`, {
-          method: "GET",
-          mode: "cors",
-          headers: {"Content-Type": "application/json"}
-        });
-        const data = await res.json();
-
-        if (data.status === "success") {
-          statusEl.textContent = data.message;
-          statusEl.className = "status success";
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "verify", token }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.success){
+          document.getElementById("message").textContent = "Verification successful! You can now log in.";
+          document.getElementById("verifyForm").reset();
         } else {
-          statusEl.textContent = data.message || "Verification failed.";
-          statusEl.className = "status error";
+          document.getElementById("message").textContent = "Error: " + data.error;
         }
-      } catch (err) {
-        statusEl.textContent = "Error connecting to server.";
-        statusEl.className = "status error";
-        console.error(err);
-      }
-    }
-
-    verify();
+      })
+      .catch(() => {
+        document.getElementById("message").textContent = "Error connecting to server.";
+      });
+    });
   </script>
-
 </body>
 </html>
