@@ -1,55 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Share-A-Ride Signup</title>
-  <meta charset="UTF-8">
+  <title>User Signup</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 20px auto; }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 15px; padding: 10px; width: 100%; background-color: #007BFF; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+    .message { margin-top: 15px; }
+  </style>
 </head>
 <body>
   <h2>User Signup</h2>
-  <form id="signup-form">
-    <input name="firstName" placeholder="First Name" required><br>
-    <input name="lastName" placeholder="Last Name" required><br>
-    <input name="mobile" placeholder="Mobile Number" required><br>
-    <input name="city" placeholder="City of Residence" required><br>
-    <select name="role" required>
-      <option value="">Select Role</option>
-      <option value="Driver">Driver</option>
-      <option value="Rider">Rider</option>
-      <option value="Both">Both</option>
-    </select><br>
-    <input name="messengerLink" placeholder="Facebook Messenger Link" required><br>
-    <input type="email" name="email" placeholder="Email" required><br>
-    <select name="gender" required>
-      <option value="">Select Gender</option>
-      <option value="Male">Male</option>
-      <option value="Female">Female</option>
-      <option value="Other">Other</option>
-    </select><br><br>
+  <form id="signupForm">
+    <label>First Name
+      <input type="text" id="firstName" required />
+    </label>
+    <label>Last Name
+      <input type="text" id="lastName" required />
+    </label>
+    <label>Mobile
+      <input type="tel" id="mobile" required />
+    </label>
+    <label>City of Residence
+      <input type="text" id="city" required />
+    </label>
+    <label>Role
+      <select id="role" required>
+        <option value="">Select Role</option>
+        <option value="Driver">Driver</option>
+        <option value="Rider">Rider</option>
+        <option value="Both">Both</option>
+      </select>
+    </label>
+    <label>Messenger Link
+      <input type="url" id="messengerLink" placeholder="https://m.me/yourprofile" required />
+    </label>
+    <label>Email
+      <input type="email" id="email" required />
+    </label>
     <button type="submit">Sign Up</button>
   </form>
-
-  <p id="message"></p>
+  <div class="message" id="message"></div>
 
   <script>
-    const form = document.getElementById('signup-form');
-    form.addEventListener('submit', async (e) => {
+    const SCRIPT_URL = "YOUR_DEPLOYED_WEB_APP_URL"; // Replace with your deployed Apps Script URL
+
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const formData = new FormData(form);
-      const jsonData = Object.fromEntries(formData.entries());
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = "";
+
+      const data = {
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        mobile: document.getElementById('mobile').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        role: document.getElementById('role').value,
+        messengerLink: document.getElementById('messengerLink').value.trim(),
+        email: document.getElementById('email').value.trim()
+      };
 
       try {
-        const res = await fetch('https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec', {
-          method: 'POST',
-          body: JSON.stringify(jsonData),
-          headers: { 'Content-Type': 'application/json' }
+        const resp = await fetch(SCRIPT_URL + "?path=signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
         });
+        const result = await resp.json();
 
-        const result = await res.json();
-        document.getElementById('message').innerText = result.status === 'success'
-          ? 'Signup successful! Check your email to verify.'
-          : 'Signup failed: ' + result.message;
-      } catch (error) {
-        document.getElementById('message').innerText = 'Error connecting to server.';
+        if (result.result === "success") {
+          messageEl.style.color = "green";
+          messageEl.textContent = result.message + " Your verification token is: " + result.token + " (use the verify page)";
+          // In production, you send email with this token. Here shown for demo.
+        } else {
+          messageEl.style.color = "red";
+          messageEl.textContent = result.message || "Signup failed";
+        }
+      } catch (err) {
+        messageEl.style.color = "red";
+        messageEl.textContent = "Error: " + err.message;
       }
     });
   </script>

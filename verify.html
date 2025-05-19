@@ -1,34 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Verify Account</title>
-  <meta charset="UTF-8">
+  <title>User Email Verification</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 20px auto; }
+    label { display: block; margin-top: 10px; }
+    input { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 15px; padding: 10px; width: 100%; background-color: #28a745; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #1e7e34; }
+    .message { margin-top: 15px; }
+  </style>
 </head>
 <body>
-  <h2>Email Verification</h2>
-  <p id="result">Verifying...</p>
+  <h2>Verify Your Email</h2>
+  <form id="verifyForm">
+    <label>Email
+      <input type="email" id="email" required />
+    </label>
+    <label>Verification Token
+      <input type="text" id="token" required />
+    </label>
+    <button type="submit">Verify</button>
+  </form>
+  <div class="message" id="message"></div>
 
   <script>
-    async function verifyUser() {
-      const params = new URLSearchParams(window.location.search);
-      const email = params.get('email');
-      const token = params.get('token');
+    const SCRIPT_URL = ""; // Replace with your deployed Apps Script URL
 
-      if (!email || !token) {
-        document.getElementById('result').innerText = 'Missing verification parameters.';
-        return;
-      }
+    document.getElementById('verifyForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = "";
+
+      const data = {
+        email: document.getElementById('email').value.trim(),
+        token: document.getElementById('token').value.trim()
+      };
 
       try {
-        const res = await fetch(`https://script.google.com/macros/s/AKfycbxS6AcXTdrj35icPqHvC57WLQKLUUVIEbPHEE3uPhmtZMJtE6sHeWXxzThfWfPq3rqr4Q/exec?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`);
-        const text = await res.text();
-        document.getElementById('result').innerText = text;
-      } catch (err) {
-        document.getElementById('result').innerText = 'Verification failed. Try again later.';
-      }
-    }
+        const resp = await fetch(SCRIPT_URL + "?path=verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        const result = await resp.json();
 
-    verifyUser();
+        if (result.result === "success") {
+          messageEl.style.color = "green";
+          messageEl.textContent = result.message;
+        } else {
+          messageEl.style.color = "red";
+          messageEl.textContent = result.message || "Verification failed";
+        }
+      } catch (err) {
+        messageEl.style.color = "red";
+        messageEl.textContent = "Error: " + err.message;
+      }
+    });
   </script>
 </body>
 </html>
