@@ -55,6 +55,22 @@
     const rideListEl = document.getElementById('rideList');
     const messageEl = document.getElementById('message');
 
+    function formatDate(isoDateStr) {
+      const date = new Date(isoDateStr);
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString(undefined, options);
+    }
+
+    function formatMobile(mobile) {
+      if (!mobile) return '-';
+      const str = mobile.toString();
+      // If already starts with 0, return as is
+      if (str.startsWith('0')) return str;
+      // Add leading 0 if length is 10 (typical Philippine mobile number without 0)
+      if (str.length === 10) return '0' + str;
+      return str; // fallback, return as is
+    }
+
     async function fetchRides() {
       messageEl.textContent = 'Loading rides...';
       try {
@@ -79,9 +95,9 @@
           card.className = 'ride-card';
           card.innerHTML = `
             <h3>${ride.name || 'No Name'}</h3>
-            <p><strong>Mobile:</strong> ${ride.mobile || '-'}</p>
+            <p><strong>Mobile:</strong> ${formatMobile(ride.mobile)}</p>
             <p><strong>Location:</strong> ${ride.pickupLocation || '-'}</p>
-            <p><strong>Date:</strong> ${ride.pickupDate || '-'}</p>
+            <p><strong>Date:</strong> ${formatDate(ride.pickupDate)}</p>
             <p><strong>Time:</strong> ${ride.pickupStartTime || '-'} - ${ride.pickupEndTime || '-'}</p>
             <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
             <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
