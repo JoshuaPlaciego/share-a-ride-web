@@ -119,7 +119,7 @@
     async function fetchRides() {
       messageEl.textContent = 'Loading rides...';
       try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec');
+        const response = await fetch('https://script.google.com/macros/s/AKfycbyUnmbHdldXZgVU377W9fZrif2CTgS02UT-GP0grsJoLV9M9bIHUp5_9Y0eGXjlcapknQ/exec');
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const data = await response.json();
