@@ -64,11 +64,21 @@
     function formatMobile(mobile) {
       if (!mobile) return '-';
       const str = mobile.toString();
-      // If already starts with 0, return as is
       if (str.startsWith('0')) return str;
-      // Add leading 0 if length is 10 (typical Philippine mobile number without 0)
       if (str.length === 10) return '0' + str;
-      return str; // fallback, return as is
+      return str;
+    }
+
+    function formatTime24to12(time24) {
+      if (!time24) return '-';
+      const [hourStr, minStr] = time24.split(':');
+      if (hourStr === undefined || minStr === undefined) return time24;
+      let hour = parseInt(hourStr, 10);
+      const minutes = minStr;
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12;
+      if (hour === 0) hour = 12;
+      return `${hour}:${minutes} ${ampm}`;
     }
 
     async function fetchRides() {
@@ -88,7 +98,7 @@
           return;
         }
 
-        messageEl.textContent = ''; // clear loading message
+        messageEl.textContent = '';
 
         data.rides.forEach(ride => {
           const card = document.createElement('div');
@@ -98,7 +108,7 @@
             <p><strong>Mobile:</strong> ${formatMobile(ride.mobile)}</p>
             <p><strong>Location:</strong> ${ride.pickupLocation || '-'}</p>
             <p><strong>Date:</strong> ${formatDate(ride.pickupDate)}</p>
-            <p><strong>Time:</strong> ${ride.pickupStartTime || '-'} - ${ride.pickupEndTime || '-'}</p>
+            <p><strong>Time:</strong> ${formatTime24to12(ride.pickupStartTime)} - ${formatTime24to12(ride.pickupEndTime)}</p>
             <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
             <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
           `;
