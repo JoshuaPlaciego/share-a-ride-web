@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User Registration - Share A Ride</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 20px;
+    }
+    form {
+      background: white;
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+      color: #333;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px 6px;
+      margin-top: 4px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      background-color: #0078d7;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+  </style>
+</head>
+<body>
+  <form id="registrationForm">
+    <h2>User Registration</h2>
+
+    <label for="firstName">First Name</label>
+    <input type="text" id="firstName" name="firstName" required />
+
+    <label for="lastName">Last Name</label>
+    <input type="text" id="lastName" name="lastName" required />
+
+    <label for="gender">Gender</label>
+    <select id="gender" name="gender" required>
+      <option value="" disabled selected>Select gender</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label for="mobile">Mobile Number</label>
+    <input type="tel" id="mobile" name="mobile" placeholder="09XXXXXXXXX" pattern="09\d{9}" required />
+
+    <label for="city">City of Residence</label>
+    <input type="text" id="city" name="city" required />
+
+    <label for="role">Role</label>
+    <select id="role" name="role" required>
+      <option value="" disabled selected>Select role</option>
+      <option value="driver">Driver</option>
+      <option value="rider">Rider</option>
+      <option value="both">Both</option>
+    </select>
+
+    <button type="submit">Register</button>
+  </form>
+
+  <script>
+    // Example: add event listener to form submission if you want to handle form data
+    const form = document.getElementById('registrationForm');
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      // Here you can collect form data and submit via Apps Script or API
+      alert('Form submitted! Add your submission logic here.');
+    });
+  </script>
+</body>
+</html>
