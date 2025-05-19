@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Verify Your Account - Share-A-Ride</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 50px;
+      color: #333;
+    }
+    .message {
+      font-size: 18px;
+      padding: 20px;
+      border-radius: 6px;
+      max-width: 600px;
+      margin: auto;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div id="statusMessage" class="message">Verifying your account...</div>
+
+  <script>
+    const statusDiv = document.getElementById('statusMessage');
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    if (!token) {
+      statusDiv.textContent = 'Verification token missing.';
+      statusDiv.classList.add('error');
+    } else {
+      fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?token=' + token)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            statusDiv.textContent = 'Your account has been successfully verified!';
+            statusDiv.classList.add('success');
+          } else {
+            statusDiv.textContent = data.message || 'Verification failed.';
+            statusDiv.classList.add('error');
+          }
+        })
+        .catch(err => {
+          statusDiv.textContent = 'An error occurred while verifying your account.';
+          statusDiv.classList.add('error');
+        });
+    }
+  </script>
+</body>
+</html>
