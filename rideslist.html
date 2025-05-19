@@ -26,6 +26,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       padding: 16px;
       transition: transform 0.2s;
+      position: relative;
     }
     .ride-card:hover {
       transform: translateY(-5px);
@@ -38,16 +39,21 @@
       margin: 5px 0;
       color: #444;
     }
+    .timer {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #d9534f;
+    }
+    .note {
+      margin-top: 6px;
+      font-style: italic;
+      color: #555;
+    }
     .message {
       text-align: center;
       font-style: italic;
       color: #888;
       margin-top: 40px;
-    }
-    .countdown-timer {
-      margin-top: 10px;
-      font-weight: bold;
-      color: #d9534f;
     }
   </style>
 </head>
@@ -59,6 +65,44 @@
   <script>
     const rideListEl = document.getElementById('rideList');
     const messageEl = document.getElementById('message');
+
+    // Convert date string (ISO format) to "MMMM-dd-yyyy"
+    function formatDate(dateStr) {
+      const options = { year: 'numeric', month: 'long', day: '2-digit' };
+      const date = new Date(dateStr);
+      return date.toLocaleDateString(undefined, options);
+    }
+
+    // Convert 24-hour time (HH:mm) to 12-hour AM/PM
+    function formatTime24to12(time24) {
+      if (!time24) return '-';
+      let [hour, minute] = time24.split(':').map(Number);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12 || 12; // convert 0 to 12 for 12AM
+      return `${hour}:${minute.toString().padStart(2, '0')} ${ampm}`;
+    }
+
+    // Format mobile number to add leading zero if missing
+    function formatMobile(mobile) {
+      if (!mobile) return '-';
+      mobile = mobile.toString();
+      if (!mobile.startsWith('0')) {
+        mobile = '0' + mobile;
+      }
+      return mobile;
+    }
+
+    // Format countdown time in hh:mm:ss format
+    function formatCountdown(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      return [
+        h > 0 ? h + 'h' : '',
+        m > 0 ? m + 'm' : '',
+        s + 's'
+      ].filter(Boolean).join(' ');
+    }
 
     async function fetchRides() {
       messageEl.textContent = 'Loading rides...';
@@ -83,81 +127,76 @@
           const card = document.createElement('div');
           card.className = 'ride-card';
 
-          // Format date
-          const dateObj = new Date(ride.pickupDate);
-          const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-          // Format 24-hour to 12-hour AM/PM
-          function formatTime(t) {
-            const [hourStr, min] = t.split(':');
-            let hour = parseInt(hourStr, 10);
-            const ampm = hour >= 12 ? 'PM' : 'AM';
-            hour = hour % 12 || 12;
-            return `${hour}:${min} ${ampm}`;
-          }
-
-          const startTimeFormatted = formatTime(ride.pickupStartTime);
-          const endTimeFormatted = formatTime(ride.pickupEndTime);
-
-          // Fix mobile number leading zero
-          let mobile = ride.mobile || '-';
-          if (typeof mobile === 'string' && !mobile.startsWith('0')) {
-            mobile = '0' + mobile;
-          }
+          // Create formatted date and times
+          const formattedDate = formatDate(ride.pickupDate);
+          const pickupStart12h = formatTime24to12(ride.pickupStartTime);
+          const pickupEnd12h = formatTime24to12(ride.pickupEndTime);
+          const formattedMobile = formatMobile(ride.mobile);
 
           card.innerHTML = `
             <h3>${ride.name || 'No Name'}</h3>
-            <p><strong>Mobile:</strong> ${mobile}</p>
+            <p><strong>Mobile:</strong> ${formattedMobile}</p>
             <p><strong>Location:</strong> ${ride.pickupLocation || '-'}</p>
             <p><strong>Date:</strong> ${formattedDate}</p>
-            <p><strong>Time:</strong> ${startTimeFormatted} - ${endTimeFormatted}</p>
+            <p><strong>Time:</strong> ${pickupStart12h} - ${pickupEnd12h}</p>
             <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
             <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
+            <div class="timer" id="timer-${ride.timestamp}"></div>
+            <div class="note" id="note-${ride.timestamp}"></div>
           `;
-
-          // Add timer element placeholder
-          const timerEl = document.createElement('p');
-          timerEl.className = 'countdown-timer';
-          card.appendChild(timerEl);
 
           rideListEl.appendChild(card);
 
-          // Start countdown timer if current time >= pickupStartTime and date is today
-          const now = new Date();
-          const todayStr = now.toISOString().slice(0, 10);
-          if (ride.pickupDate === todayStr) {
-            const [startHour, startMin] = ride.pickupStartTime.split(':').map(Number);
-            const [endHour, endMin] = ride.pickupEndTime.split(':').map(Number);
-
-            const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin);
-            const endDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMin);
-
-            if (now >= startDateTime) {
-              let intervalId = null;
-
-              const updateTimer = () => {
-                const diffMs = endDateTime - new Date();
-                if (diffMs <= 0) {
-                  timerEl.textContent = "Ride availability has ended.";
-                  clearInterval(intervalId);
-                  return;
-                }
-                const hrs = Math.floor(diffMs / 3600000);
-                const mins = Math.floor((diffMs % 3600000) / 60000);
-                const secs = Math.floor((diffMs % 60000) / 1000);
-
-                timerEl.textContent = `Driver should have arrived and waiting until ${endTimeFormatted} (Time left: ${hrs}h ${mins}m ${secs}s)`;
-              };
-
-              updateTimer();
-              intervalId = setInterval(updateTimer, 1000);
-            }
-          }
+          // Timer logic
+          startCountdownTimer(ride.timestamp, ride.pickupStartTime, ride.pickupEndTime);
         });
       } catch (error) {
         messageEl.textContent = 'Error loading rides: ' + error.message;
         console.error('Error fetching rides:', error);
       }
+    }
+
+    function startCountdownTimer(timestamp, pickupStartTime, pickupEndTime) {
+      const timerEl = document.getElementById(`timer-${timestamp}`);
+      const noteEl = document.getElementById(`note-${timestamp}`);
+      if (!timerEl || !noteEl) return;
+
+      // Parse times (24-hour format assumed)
+      const now = new Date();
+      const [startHour, startMin] = pickupStartTime.split(':').map(Number);
+      const [endHour, endMin] = pickupEndTime.split(':').map(Number);
+
+      const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin);
+      const endDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMin);
+
+      // Clear previous interval if any (precaution)
+      if (timerEl._intervalId) {
+        clearInterval(timerEl._intervalId);
+      }
+
+      function updateTimer() {
+        const now = new Date();
+
+        if (now < startDateTime) {
+          // Before pickup start time - no timer or note shown
+          timerEl.textContent = '';
+          noteEl.textContent = '';
+          return;
+        } else if (now >= startDateTime && now <= endDateTime) {
+          // During pickup window - show timer and note
+          const secondsLeft = Math.floor((endDateTime - now) / 1000);
+          timerEl.textContent = 'Time left to join ride: ' + formatCountdown(secondsLeft);
+          noteEl.textContent = 'Driver should have arrived and is waiting until the ride end time.';
+        } else {
+          // After pickup end time - hide ride (remove card)
+          const card = timerEl.closest('.ride-card');
+          if (card) card.remove();
+          clearInterval(timerEl._intervalId);
+        }
+      }
+
+      updateTimer();
+      timerEl._intervalId = setInterval(updateTimer, 1000);
     }
 
     fetchRides();
