@@ -1,93 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <base target="_top">
   <meta charset="UTF-8">
-  <title>Share‑A‑Ride: User Sign Up</title>
+  <title>Share‑A‑Ride Registration</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 400px; margin: 2rem auto; }
-    label { display: block; margin: 0.5rem 0 0.2rem; }
-    input, select, button { width: 100%; padding: 0.5rem; margin-bottom: 1rem; }
-    button { background-color: #007bff; color: white; border: none; cursor: pointer; }
-    #message { font-weight: bold; margin-top: 1rem; }
+    body { font-family: Arial,sans-serif; max-width:400px; margin:2rem auto; }
+    label { display:block; margin-top:1rem; }
+    input, select, button { width:100%; padding:.5rem; margin-top:.3rem; }
+    button { background:#007bff; color:#fff; border:none; cursor:pointer; }
+    #msg { margin-top:1rem; font-weight:bold; }
   </style>
 </head>
 <body>
-
-  <h2>User Registration</h2>
+  <h2>Sign Up for Share‑A‑Ride</h2>
   <form id="signupForm">
-    <!-- Hidden field for routing -->
-    <input type="hidden" name="path" value="register">
-
-    <label for="firstName">First Name</label>
-    <input type="text" id="firstName" name="firstName" required>
-
-    <label for="lastName">Last Name</label>
-    <input type="text" id="lastName" name="lastName" required>
-
-    <label for="gender">Gender</label>
-    <select id="gender" name="gender" required>
-      <option value="" disabled selected>Select gender</option>
-      <option>Male</option>
-      <option>Female</option>
-      <option>Other</option>
-    </select>
-
-    <label for="mobile">Mobile Number</label>
-    <input type="tel" id="mobile" name="mobile" required>
-
-    <label for="city">City of Residence</label>
-    <input type="text" id="city" name="city" required>
-
-    <label for="role">Role</label>
-    <select id="role" name="role" required>
-      <option value="" disabled selected>Select role</option>
-      <option>Driver</option>
-      <option>Rider</option>
-      <option>Both</option>
-    </select>
-
-    <label for="messenger">Messenger Link</label>
-    <input type="url" id="messenger" name="messenger" placeholder="https://m.me/yourname" required>
-
-    <label for="email">Email Address</label>
-    <input type="email" id="email" name="email" required>
-
+    <label>First Name
+      <input type="text" name="firstName" required>
+    </label>
+    <label>Last Name
+      <input type="text" name="lastName" required>
+    </label>
+    <label>Gender
+      <select name="gender" required>
+        <option value="" disabled selected>Select gender</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+      </select>
+    </label>
+    <label>Mobile Number
+      <input type="tel" name="mobile" required>
+    </label>
+    <label>City of Residence
+      <input type="text" name="city" required>
+    </label>
+    <label>Role
+      <select name="role" required>
+        <option value="" disabled selected>Select role</option>
+        <option>Driver</option>
+        <option>Rider</option>
+        <option>Both</option>
+      </select>
+    </label>
+    <label>Messenger Link
+      <input type="url" name="messenger" placeholder="https://m.me/yourname" required>
+    </label>
+    <label>Email Address
+      <input type="email" name="email" required>
+    </label>
     <button type="submit">Register</button>
   </form>
-
-  <div id="message"></div>
+  <div id="msg"></div>
 
   <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzFgzF3pk9bCZrW56H-jzwMHJ6g-m9G0IxsB-Wwh4c8iZIW6CQ8EXEuwMcaomCObOCobg/exec';
+    const form = document.getElementById('signupForm');
+    const msg  = document.getElementById('msg');
 
-    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    form.addEventListener('submit', e => {
       e.preventDefault();
-      const form = e.target;
-      const payload = Object.fromEntries(new FormData(form).entries());
+      const data = Object.fromEntries(new FormData(form).entries());
 
-      try {
-        const res = await fetch(`${WEB_APP_URL}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const json = await res.json();
-
-        const msgEl = document.getElementById('message');
-        if (json.result === 'success') {
-          msgEl.style.color = 'green';
-          msgEl.textContent = json.message;
-          form.reset();
-        } else {
-          msgEl.style.color = 'red';
-          msgEl.textContent = json.message;
-        }
-      } catch (err) {
-        document.getElementById('message').style.color = 'red';
-        document.getElementById('message').textContent = 'Network or CORS error: ' + err.message;
-      }
+      google.script.run
+        .withSuccessHandler(res => {
+          msg.style.color = res.success ? 'green' : 'red';
+          msg.textContent   = res.message;
+          if (res.success) form.reset();
+        })
+        .registerUser(data);
     });
   </script>
-
 </body>
 </html>
