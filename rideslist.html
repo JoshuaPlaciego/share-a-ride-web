@@ -44,15 +44,10 @@
       color: #888;
       margin-top: 40px;
     }
-    .timer-note {
+    .countdown-timer {
       margin-top: 10px;
       font-weight: bold;
       color: #d9534f;
-    }
-    .countdown-timer {
-      margin-top: 5px;
-      font-weight: bold;
-      color: #337ab7;
     }
   </style>
 </head>
@@ -64,40 +59,6 @@
   <script>
     const rideListEl = document.getElementById('rideList');
     const messageEl = document.getElementById('message');
-
-    function formatDate(dateStr) {
-      const months = ["January", "February", "March", "April", "May", "June",
-                      "July", "August", "September", "October", "November", "December"];
-      const date = new Date(dateStr);
-      return `${months[date.getMonth()]}-${String(date.getDate()).padStart(2, '0')}-${date.getFullYear()}`;
-    }
-
-    function formatPhoneNumber(phone) {
-      if (!phone) return '-';
-      phone = phone.toString().trim();
-      if (!phone.startsWith('0')) {
-        phone = '0' + phone;
-      }
-      return phone;
-    }
-
-    function convertTo12Hour(time24) {
-      if (!time24) return '-';
-      const [hourStr, minute] = time24.split(':');
-      let hour = parseInt(hourStr, 10);
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      hour = hour % 12 || 12;
-      return `${hour}:${minute} ${ampm}`;
-    }
-
-    // Helper: format remaining time as HH:MM:SS
-    function formatRemainingTime(ms) {
-      const totalSeconds = Math.floor(ms / 1000);
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      return `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-    }
 
     async function fetchRides() {
       messageEl.textContent = 'Loading rides...';
@@ -122,52 +83,76 @@
           const card = document.createElement('div');
           card.className = 'ride-card';
 
+          // Format date
+          const dateObj = new Date(ride.pickupDate);
+          const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+          // Format 24-hour to 12-hour AM/PM
+          function formatTime(t) {
+            const [hourStr, min] = t.split(':');
+            let hour = parseInt(hourStr, 10);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            hour = hour % 12 || 12;
+            return `${hour}:${min} ${ampm}`;
+          }
+
+          const startTimeFormatted = formatTime(ride.pickupStartTime);
+          const endTimeFormatted = formatTime(ride.pickupEndTime);
+
+          // Fix mobile number leading zero
+          let mobile = ride.mobile || '-';
+          if (typeof mobile === 'string' && !mobile.startsWith('0')) {
+            mobile = '0' + mobile;
+          }
+
           card.innerHTML = `
             <h3>${ride.name || 'No Name'}</h3>
-            <p><strong>Mobile:</strong> ${formatPhoneNumber(ride.mobile)}</p>
+            <p><strong>Mobile:</strong> ${mobile}</p>
             <p><strong>Location:</strong> ${ride.pickupLocation || '-'}</p>
-            <p><strong>Date:</strong> ${formatDate(ride.pickupDate)}</p>
-            <p><strong>Time:</strong> ${convertTo12Hour(ride.pickupStartTime)} - ${convertTo12Hour(ride.pickupEndTime)}</p>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${startTimeFormatted} - ${endTimeFormatted}</p>
             <p><strong>Seats:</strong> ${ride.seats || '-'}</p>
             <p><strong>Notes:</strong> ${ride.otherInfo || '-'}</p>
           `;
 
-          const now = new Date();
-          const rideDateStr = ride.pickupDate.split('T')[0]; // yyyy-mm-dd
-          const todayStr = now.toISOString().split('T')[0];
-
-          if (rideDateStr === todayStr && ride.pickupStartTime && ride.pickupEndTime) {
-            const pickupStartDateTime = new Date(`${rideDateStr}T${ride.pickupStartTime}:00`);
-            const pickupEndDateTime = new Date(`${rideDateStr}T${ride.pickupEndTime}:00`);
-
-            if (now >= pickupStartDateTime && now <= pickupEndDateTime) {
-              // Add the timer note
-              const note = document.createElement('p');
-              note.className = 'timer-note';
-              note.textContent = `Driver should have arrived and waiting until: ${convertTo12Hour(ride.pickupEndTime)}`;
-              card.appendChild(note);
-
-              // Add countdown timer element
-              const timerEl = document.createElement('p');
-              timerEl.className = 'countdown-timer';
-              card.appendChild(timerEl);
-
-              // Update countdown every second
-              const intervalId = setInterval(() => {
-                const nowInner = new Date();
-                const diff = pickupEndDateTime - nowInner;
-
-                if (diff <= 0) {
-                  timerEl.textContent = 'Ride time has ended.';
-                  clearInterval(intervalId);
-                } else {
-                  timerEl.textContent = 'Time left: ' + formatRemainingTime(diff);
-                }
-              }, 1000);
-            }
-          }
+          // Add timer element placeholder
+          const timerEl = document.createElement('p');
+          timerEl.className = 'countdown-timer';
+          card.appendChild(timerEl);
 
           rideListEl.appendChild(card);
+
+          // Start countdown timer if current time >= pickupStartTime and date is today
+          const now = new Date();
+          const todayStr = now.toISOString().slice(0, 10);
+          if (ride.pickupDate === todayStr) {
+            const [startHour, startMin] = ride.pickupStartTime.split(':').map(Number);
+            const [endHour, endMin] = ride.pickupEndTime.split(':').map(Number);
+
+            const startDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin);
+            const endDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, endMin);
+
+            if (now >= startDateTime) {
+              timerEl.textContent = "Driver should have arrived and waiting until ";
+
+              const updateTimer = () => {
+                const diffMs = endDateTime - new Date();
+                if (diffMs <= 0) {
+                  timerEl.textContent = "Ride availability has ended.";
+                  clearInterval(intervalId);
+                  return;
+                }
+                const hrs = Math.floor(diffMs / 3600000);
+                const mins = Math.floor((diffMs % 3600000) / 60000);
+                const secs = Math.floor((diffMs % 60000) / 1000);
+
+                timerEl.textContent = `Driver should have arrived and waiting until ${endTimeFormatted} (Time left: ${hrs}h ${mins}m ${secs}s)`;
+              };
+
+              updateTimer();
+              const intervalId = setInterval(updateTimer, 1000);
+            }
+          }
         });
       } catch (error) {
         messageEl.textContent = 'Error loading rides: ' + error.message;
