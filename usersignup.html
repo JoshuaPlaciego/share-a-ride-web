@@ -45,6 +45,10 @@
     button:hover {
       background-color: #005fa3;
     }
+    .message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -68,28 +72,25 @@
     <label for="mobile">Mobile Number</label>
     <input type="tel" id="mobile" name="mobile" placeholder="09XXXXXXXXX" maxlength="11" required />
 
-    <label for="email">Email</label>
-    <input type="email" id="email" name="email" placeholder="you@example.com" required />
-
     <label for="city">City of Residence</label>
     <select id="city" name="city" required>
       <option value="" disabled selected>Select city</option>
-      <option value="Caloocan">Caloocan</option>
-      <option value="Las Piñas">Las Piñas</option>
-      <option value="Makati">Makati</option>
-      <option value="Malabon">Malabon</option>
-      <option value="Mandaluyong">Mandaluyong</option>
-      <option value="Marikina">Marikina</option>
-      <option value="Muntinlupa">Muntinlupa</option>
-      <option value="Navotas">Navotas</option>
-      <option value="Parañaque">Parañaque</option>
-      <option value="Pasay">Pasay</option>
-      <option value="Pasig">Pasig</option>
-      <option value="Quezon City">Quezon City</option>
-      <option value="San Juan">San Juan</option>
-      <option value="Taguig">Taguig</option>
-      <option value="Valenzuela">Valenzuela</option>
-      <option value="Manila">Manila</option>
+      <option>Caloocan</option>
+      <option>Las Piñas</option>
+      <option>Makati</option>
+      <option>Malabon</option>
+      <option>Mandaluyong</option>
+      <option>Marikina</option>
+      <option>Muntinlupa</option>
+      <option>Navotas</option>
+      <option>Parañaque</option>
+      <option>Pasay</option>
+      <option>Pasig</option>
+      <option>Quezon City</option>
+      <option>San Juan</option>
+      <option>Taguig</option>
+      <option>Valenzuela</option>
+      <option>Manila</option>
     </select>
 
     <label for="role">Role</label>
@@ -100,63 +101,60 @@
       <option value="both">Both</option>
     </select>
 
-    <label for="messengerLink">Messenger Link (optional)</label>
-    <input type="url" id="messengerLink" name="messengerLink" placeholder="https://m.me/yourprofile" />
-
     <button type="submit">Register</button>
+
+    <div class="message" id="message"></div>
   </form>
 
   <script>
-    const mobileInput = document.getElementById('mobile');
-
-    mobileInput.addEventListener('input', () => {
-      let val = mobileInput.value;
-
-      val = val.replace(/\D/g, '');
-
-      if (val.length > 11) val = val.slice(0, 11);
-
-      if (val.length > 0 && val[0] !== '0') val = '0' + val.slice(1);
-      if (val.length > 1 && val[1] !== '9') val = val[0] + '9' + val.slice(2);
-
-      mobileInput.value = val;
-    });
-
-    mobileInput.addEventListener('keypress', (e) => {
-      if (!'0123456789'.includes(e.key)) e.preventDefault();
-    });
-
     const form = document.getElementById('registrationForm');
-    form.addEventListener('submit', e => {
-      e.preventDefault();
+    const messageDiv = document.getElementById('message');
 
-      if (mobileInput.value.length !== 11) {
-        alert('Mobile number must be exactly 11 digits.');
-        mobileInput.focus();
+    // Replace this with your actual Google Apps Script Web App URL that handles registration
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      messageDiv.textContent = '';
+
+      // Simple validation for mobile number length and starting digits
+      const mobile = form.mobile.value.trim();
+      if (!/^09\d{9}$/.test(mobile)) {
+        messageDiv.style.color = 'red';
+        messageDiv.textContent = 'Mobile number must be 11 digits starting with 09.';
         return;
       }
 
-      // Collect form data
-      const userData = {
+      const data = {
         firstName: form.firstName.value.trim(),
         lastName: form.lastName.value.trim(),
         gender: form.gender.value,
-        mobile: mobileInput.value,
-        email: form.email.value.trim(),
+        mobile: mobile,
         city: form.city.value,
-        role: form.role.value,
-        messengerLink: form.messengerLink.value.trim()
+        role: form.role.value
       };
 
-      // Call backend Apps Script function to register user
-      google.script.run.withSuccessHandler(response => {
-        alert(response.message);
-        if (response.status === 'ok') {
+      try {
+        const res = await fetch(GAS_WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'registerUser', data })
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          messageDiv.style.color = 'green';
+          messageDiv.textContent = 'Registration successful! Please check your email for the magic link to verify your account.';
           form.reset();
+        } else {
+          messageDiv.style.color = 'red';
+          messageDiv.textContent = 'Error: ' + (result.message || 'Unknown error');
         }
-      }).withFailureHandler(error => {
-        alert('Error: ' + error.message);
-      }).registerUser(userData);
+      } catch (err) {
+        messageDiv.style.color = 'red';
+        messageDiv.textContent = 'Failed to send registration: ' + err.message;
+      }
     });
   </script>
 </body>
